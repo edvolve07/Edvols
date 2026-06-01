@@ -1,0 +1,143 @@
+import { useEffect, useState } from "react";
+import { ArrowRight, BarChart3, BookOpenCheck, Clock3, FilePlus2, Loader2, Mic2, Users } from "lucide-react";
+import { Link } from "@/src/navigation";
+import { apiFetch } from "@/lib/api";
+
+function StatCard({ label, value, icon: Icon, tone = "brand" }) {
+  const tones = {
+    brand: "bg-brand-50 text-brand-600",
+    green: "bg-emerald-50 text-emerald-600",
+    amber: "bg-amber-50 text-amber-600",
+    slate: "bg-slate-100 text-slate-700",
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card sm:p-5">
+      <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${tones[tone]}`}>
+        <Icon size={19} />
+      </div>
+      <p className="font-display text-2xl font-semibold text-slate-950 sm:text-3xl">{value ?? 0}</p>
+      <p className="mt-1 text-sm text-slate-500">{label}</p>
+    </div>
+  );
+}
+
+export default function PrepupAdminDashboard() {
+  const [stats, setStats] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    apiFetch("/api/admin/dashboard")
+      .then((data) => {
+        if (active) setStats(data);
+      })
+      .catch((err) => {
+        if (active) setError(err.message || "Unable to load admin dashboard.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-red-100 bg-red-50 p-5 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center text-sm font-medium text-slate-500">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin text-brand-500" />
+        Loading admin dashboard
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <section className="mb-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-card sm:mb-6 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-brand-600">Lecturer workspace</p>
+            <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+              Admin Dashboard
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
+              Create assessments and review aptitude or interview analytics from dedicated pages.
+            </p>
+          </div>
+          <Link
+            href="/admin/assessments/create"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-semibold text-white shadow-brand transition hover:bg-brand-600 sm:w-auto"
+          >
+            Create assessment <FilePlus2 size={16} />
+          </Link>
+        </div>
+      </section>
+
+      <section className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+        <StatCard label="Assessments" value={stats.assessments} icon={BookOpenCheck} />
+        <StatCard label="Published" value={stats.published} icon={BarChart3} tone="green" />
+        <StatCard label="Students" value={stats.students} icon={Users} tone="amber" />
+        <StatCard label="Submissions" value={stats.submitted_attempts} icon={Clock3} tone="slate" />
+      </section>
+
+      <section className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <StatCard label="In progress" value={stats.in_progress_attempts} icon={Clock3} />
+        <StatCard label="Aptitude pass rate" value={`${stats.pass_rate ?? 0}%`} icon={BarChart3} tone="green" />
+        <StatCard label="Average aptitude score" value={`${stats.average_percentage ?? 0}%`} icon={BookOpenCheck} tone="amber" />
+      </section>
+
+      <section className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4">
+        <StatCard label="Interview reports" value={stats.interview_analytics?.reports} icon={Mic2} />
+        <StatCard
+          label="Average interview score"
+          value={`${stats.interview_analytics?.average_percentage ?? 0}%`}
+          icon={BarChart3}
+          tone="green"
+        />
+      </section>
+
+      <section className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+        <Link
+          href="/admin/analytics/aptitude"
+          className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover sm:p-5"
+        >
+          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <BookOpenCheck size={19} />
+          </div>
+          <h2 className="font-display text-lg font-semibold text-slate-950 sm:text-xl">Aptitude Analytics</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            See each student&apos;s latest aptitude result first, then open all attempts for that student.
+          </p>
+          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
+            Open aptitude analytics <ArrowRight size={15} />
+          </span>
+        </Link>
+
+        <Link
+          href="/admin/analytics/interviews"
+          className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover sm:p-5"
+        >
+          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+            <Mic2 size={19} />
+          </div>
+          <h2 className="font-display text-lg font-semibold text-slate-950 sm:text-xl">Interview Analytics</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            Review student interview reports, scores, grades, ATS scores, and full report details.
+          </p>
+          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
+            Open interview analytics <ArrowRight size={15} />
+          </span>
+        </Link>
+      </section>
+    </div>
+  );
+}
