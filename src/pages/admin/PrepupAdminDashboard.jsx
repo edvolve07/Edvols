@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, BarChart3, BookOpenCheck, Clock3, FilePlus2, Loader2, Mic2, Users } from "lucide-react";
 import { Link } from "@/src/navigation";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/src/portal/context/AuthContext";
 
 function StatCard({ label, value, icon: Icon, tone = "brand" }) {
   const tones = {
@@ -23,6 +24,10 @@ function StatCard({ label, value, icon: Icon, tone = "brand" }) {
 }
 
 export default function PrepupAdminDashboard() {
+  const { user } = useAuth();
+  const userModules = user?.modules_access || ["both"];
+  const hasAptitude = userModules.includes("aptitude") || userModules.includes("both");
+  const hasInterview = userModules.includes("ai_interview") || userModules.includes("both");
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
 
@@ -82,61 +87,71 @@ export default function PrepupAdminDashboard() {
         </div>
       </section>
 
-      <section className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
-        <StatCard label="Assessments" value={stats.assessments} icon={BookOpenCheck} />
-        <StatCard label="Published" value={stats.published} icon={BarChart3} tone="green" />
-        <StatCard label="Students" value={stats.students} icon={Users} tone="amber" />
-        <StatCard label="Submissions" value={stats.submitted_attempts} icon={Clock3} tone="slate" />
-      </section>
+      {hasAptitude ? (
+        <section className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+          <StatCard label="Assessments" value={stats.assessments} icon={BookOpenCheck} />
+          <StatCard label="Published" value={stats.published} icon={BarChart3} tone="green" />
+          <StatCard label="Students" value={stats.students} icon={Users} tone="amber" />
+          <StatCard label="Submissions" value={stats.submitted_attempts} icon={Clock3} tone="slate" />
+        </section>
+      ) : null}
 
-      <section className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-        <StatCard label="In progress" value={stats.in_progress_attempts} icon={Clock3} />
-        <StatCard label="Aptitude pass rate" value={`${stats.pass_rate ?? 0}%`} icon={BarChart3} tone="green" />
-        <StatCard label="Average aptitude score" value={`${stats.average_percentage ?? 0}%`} icon={BookOpenCheck} tone="amber" />
-      </section>
+      {hasAptitude ? (
+        <section className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          <StatCard label="In progress" value={stats.in_progress_attempts} icon={Clock3} />
+          <StatCard label="Aptitude pass rate" value={`${stats.pass_rate ?? 0}%`} icon={BarChart3} tone="green" />
+          <StatCard label="Average aptitude score" value={`${stats.average_percentage ?? 0}%`} icon={BookOpenCheck} tone="amber" />
+        </section>
+      ) : null}
 
-      <section className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4">
-        <StatCard label="Interview reports" value={stats.interview_analytics?.reports} icon={Mic2} />
-        <StatCard
-          label="Average interview score"
-          value={`${stats.interview_analytics?.average_percentage ?? 0}%`}
-          icon={BarChart3}
-          tone="green"
-        />
-      </section>
+      {hasInterview ? (
+        <section className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4">
+          <StatCard label="Interview reports" value={stats.interview_analytics?.reports} icon={Mic2} />
+          <StatCard
+            label="Average interview score"
+            value={`${stats.interview_analytics?.average_percentage ?? 0}%`}
+            icon={BarChart3}
+            tone="green"
+          />
+        </section>
+      ) : null}
 
       <section className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-        <Link
-          href="/admin/analytics/aptitude"
-          className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover sm:p-5"
-        >
-          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-            <BookOpenCheck size={19} />
-          </div>
-          <h2 className="font-display text-lg font-semibold text-slate-950 sm:text-xl">Aptitude Analytics</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            See each student&apos;s latest aptitude result first, then open all attempts for that student.
-          </p>
-          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
-            Open aptitude analytics <ArrowRight size={15} />
-          </span>
-        </Link>
+        {hasAptitude ? (
+          <Link
+            href="/admin/analytics/aptitude"
+            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover sm:p-5"
+          >
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+              <BookOpenCheck size={19} />
+            </div>
+            <h2 className="font-display text-lg font-semibold text-slate-950 sm:text-xl">Aptitude Analytics</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              See each student&apos;s latest aptitude result first, then open all attempts for that student.
+            </p>
+            <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
+              Open aptitude analytics <ArrowRight size={15} />
+            </span>
+          </Link>
+        ) : null}
 
-        <Link
-          href="/admin/analytics/interviews"
-          className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover sm:p-5"
-        >
-          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-            <Mic2 size={19} />
-          </div>
-          <h2 className="font-display text-lg font-semibold text-slate-950 sm:text-xl">Interview Analytics</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            Review student interview reports, scores, grades, ATS scores, and full report details.
-          </p>
-          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
-            Open interview analytics <ArrowRight size={15} />
-          </span>
-        </Link>
+        {hasInterview ? (
+          <Link
+            href="/admin/analytics/interviews"
+            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover sm:p-5"
+          >
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <Mic2 size={19} />
+            </div>
+            <h2 className="font-display text-lg font-semibold text-slate-950 sm:text-xl">Interview Analytics</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Review student interview reports, scores, grades, ATS scores, and full report details.
+            </p>
+            <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
+              Open interview analytics <ArrowRight size={15} />
+            </span>
+          </Link>
+        ) : null}
       </section>
     </div>
   );

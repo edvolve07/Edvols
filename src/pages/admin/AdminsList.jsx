@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Loader2, Search, ShieldCheck, Users } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Loader2, Search, ShieldCheck } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
 function formatDateTime(value) {
@@ -10,11 +10,27 @@ function formatDateTime(value) {
   }).format(new Date(value));
 }
 
+const MODULE_OPTIONS = [
+  { value: "ai_interview", label: "Interview" },
+  { value: "aptitude", label: "Aptitude" },
+  { value: "both", label: "All" },
+];
+
+function moduleLabel(modules) {
+  const m = modules || ["both"];
+  if (m.includes("both")) return "All";
+  return m.map((v) => MODULE_OPTIONS.find((o) => o.value === v)?.label || v).join(", ");
+}
+
 export default function AdminsList() {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [saving, setSaving] = useState("");
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [dropdownPos, setDropdownPos] = useState({ left: 0, top: 0 });
+  const menuRef = useRef(null);
 
   useEffect(() => {
     let active = true;
@@ -31,6 +47,47 @@ export default function AdminsList() {
       });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    if (openDropdown === null) return;
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenDropdown(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [openDropdown]);
+
+  function toggleDropdown(id, btnEl) {
+    if (openDropdown === id) {
+      setOpenDropdown(null);
+    } else {
+      const rect = btnEl.getBoundingClientRect();
+      setDropdownPos({ left: rect.left, top: rect.bottom + 4 });
+      setOpenDropdown(id);
+    }
+  }
+
+  async function updateModules(adminId, value) {
+    setSaving(adminId);
+    setOpenDropdown(null);
+    setError("");
+    try {
+      const modules = value === "both" ? ["both"] : [value];
+      await apiFetch(`/api/master/users/${adminId}/modules`, {
+        method: "PATCH",
+        body: JSON.stringify({ modules_access: modules }),
+      });
+      setAdmins((prev) =>
+        prev.map((a) => (a.id === adminId ? { ...a, modules_access: modules } : a)),
+      );
+    } catch (err) {
+      setError(err.message || "Unable to update modules.");
+    } finally {
+      setSaving("");
+    }
+  }
 
   function filtered() {
     if (!search.trim()) return admins;
@@ -72,7 +129,7 @@ export default function AdminsList() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
+      <section className="rounded-2xl border border-slate-100 bg-white shadow-card">
         <div className="border-b border-slate-100 px-4 py-4 sm:px-5">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-brand-500" />
@@ -116,13 +173,20 @@ export default function AdminsList() {
                       <td className="px-4 py-3 text-xs">{a.phone || "—"}</td>
                       <td className="px-4 py-3 text-xs">{a.organization || "—"}</td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex gap-1">
-                          {(a.modules_access || []).map((m) => (
-                            <span key={m} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                              {m === "ai_interview" ? "Interview" : m === "aptitude" ? "Aptitude" : "All"}
-                            </span>
-                          ))}
-                        </span>
+                        <div>
+                          <button
+                            disabled={saving === a.id}
+                            onClick={(e) => toggleDropdown(a.id, e.currentTarget)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                          >
+                            {saving === a.id ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                              moduleLabel(a.modules_access)
+                            )}
+                            <ChevronDown size={12} />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -148,6 +212,30 @@ export default function AdminsList() {
           </div>
         )}
       </section>
+      {openDropdown ? (
+        <div
+          ref={menuRef}
+          style={{ left: dropdownPos.left, top: dropdownPos.top, position: "fixed", zIndex: 9999 }}
+          className="w-40 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+        >
+          {MODULE_OPTIONS.map((opt) => {
+            const admin = admins.find((a) => a.id === openDropdown);
+            const current = admin?.modules_access || ["both"];
+            const active = current.includes(opt.value) || current.includes("both");
+            return (
+              <button
+                key={opt.value}
+                onClick={() => updateModules(openDropdown, opt.value)}
+                className={`block w-full px-3 py-1.5 text-left text-xs font-semibold transition hover:bg-slate-50 ${
+                  active ? "text-brand-700" : "text-slate-600"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }

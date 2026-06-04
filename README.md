@@ -19,54 +19,43 @@
 ## Architecture Overview
 
 ```mermaid
-graph TB
-    subgraph Browser["Browser Layer"]
-        A[BrowserRouter]
-        B[AuthProvider]
-        C[ToastProvider]
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '28px', 'primaryColor': '#ffffff', 'edgeLabelBackground':'#ffffff'}}}%%
+graph LR
+    subgraph Layer1["Provider Layer"]
+        A["BrowserRouter"]
+        B["AuthContext"]
+        C["ToastContext"]
     end
 
-    subgraph Routing["Route Layer"]
-        D[Public Routes]
-        E[RequireSession Guard]
-        F[RequireRole Guard]
-        G[RoleGuard]
+    subgraph Layer2["Gate Layer"]
+        D["RequireSession"]
+        E["RequireRole"]
+        F["RoleGuard"]
     end
 
-    subgraph Layout["Layout Layer"]
-        H[AppShell]
-        I[Sidebar]
-        J[Header / Logout]
+    subgraph Layer3["Layout Layer"]
+        G["AppShell"]
+        H["Sidebar"]
+        I["Header"]
     end
 
-    subgraph Pages["Page Components"]
-        K[Student Pages]
-        L[Admin Pages]
-        M[Master Admin Pages]
-        N[Auth Pages]
+    subgraph Layer4["Page Layer"]
+        J["Student Pages"]
+        K["Admin Pages"]
+        L["Master Admin Pages"]
+        M["Auth Pages"]
     end
 
-    subgraph State["State Layer"]
-        O[AuthContext]
-        P[ToastContext]
-    end
-
-    subgraph API["API Layer"]
-        Q[lib/api.js fetch wrapper]
+    subgraph Layer5["API Layer"]
+        N["api.js fetch wrapper"]
     end
 
     A --> B --> C
-    C --> Routing
-    D --> N
-    E --> Routing --> Layout
-    F --> E
-    G --> F
-    H --> I
-    H --> J
-    Layout --> Pages
-    Pages --> State
-    Pages --> API
-    State --> API
+    C --> D --> E --> F
+    F --> G --> H
+    G --> I
+    G --> Layer4
+    Layer4 --> N
 ```
 
 ---
@@ -74,45 +63,16 @@ graph TB
 ## Route Hierarchy
 
 ```mermaid
-graph LR
-    subgraph Public["Public Routes"]
-        direction LR
-        A1["/login"]
-        A2["/signup"]
-        A3["/forgot-password"]
-        A4["/reset-password"]
-        A5["/access-revoked"]
-    end
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '28px'}}}%%
+graph TD
+    Auth["/login /signup /forgot-password /reset-password /access-revoked"]
+    Student["/dashboard /interview /aptitude/* /reports/* /student/*"]
+    Admin["/admin-dashboard /admin/assessments /admin/analytics/*"]
+    Master["/master-admin-dashboard /master-admin/students /master-admin/admins /master-admin/create-admin /master-admin/create-user /master-admin/ai-usage"]
 
-    subgraph Student["Student Routes"]
-        direction LR
-        S1["/dashboard"]
-        S2["/interview"]
-        S3["/aptitude/*"]
-        S4["/reports/*"]
-        S5["/student/*"]
-    end
-
-    subgraph Admin["Admin Routes"]
-        direction LR
-        AD1["/admin-dashboard"]
-        AD2["/admin/assessments"]
-        AD3["/admin/analytics/*"]
-    end
-
-    subgraph Master["Master Admin Routes"]
-        direction LR
-        M1["/master-admin-dashboard"]
-        M2["/master-admin/students"]
-        M3["/master-admin/admins"]
-        M4["/master-admin/create-admin"]
-        M5["/master-admin/create-user"]
-        M6["/master-admin/ai-usage"]
-    end
-
-    Public -->|Login| Student
-    Public -->|Login| Admin
-    Public -->|Login| Master
+    Auth -->|Login| Student
+    Auth -->|Login| Admin
+    Auth -->|Login| Master
 ```
 
 ---
@@ -120,76 +80,144 @@ graph LR
 ## Authentication Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '28px'}}}%%
 sequenceDiagram
     actor User
-    participant Browser as Browser (LocalStorage)
-    participant Auth as AuthContext
-    participant API as Backend API
+    participant Client as "Frontend"
+    participant API as "Backend API"
 
-    User->>Auth: Login(email, password)
-    Auth->>API: POST /auth/login
-    API-->>Auth: { token, user }
-    Auth->>Browser: Store token in localStorage
-    Auth-->>User: Set user state, redirect
+    User->>Client: Enter email + password
+    Client->>API: POST /auth/login
+    API-->>Client: { token, user }
+    Client-->>User: Redirect to dashboard
 
-    Note over Auth,API: On app mount / refresh
+    Note over Client,API: On page refresh
 
-    Auth->>Browser: Read token from localStorage
-    Auth->>API: GET /auth/me
-    API-->>Auth: { user }
-    Auth-->>User: Set user state
+    Client->>API: GET /auth/me (with token)
+    API-->>Client: { user }
+    Client-->>User: Restore session
 
-    Note over Auth,API: If token expired / invalid
-
-    API-->>Auth: 401 Unauthorized
-    Auth->>Browser: Clear localStorage tokens
-    Auth-->>User: Redirect to /login
-
-    Note over Auth,API: If account revoked
-
-    API-->>Auth: 423 Locked
-    Auth-->>User: Redirect to /access-revoked
+    Note over Client,API: 401 = redirect to /login
+    Note over Client,API: 423 = redirect to /access-revoked
 ```
 
 ---
 
-## Role-Based Access Control
+## Role-Based Access
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '28px'}}}%%
 graph TD
-    subgraph Roles["Three Role Tiers"]
-        SA[Super Admin]
-        AD[Admin]
-        ST[Student]
-    end
+    SA["Super Admin"] --> SA_P["Create/Revoke Admins<br/>Create/Revoke Users<br/>View All Students & Admins<br/>Manage API Keys<br/>AI Usage Dashboard"]
+    AD["Admin"] --> AD_P["Create Assessments<br/>View Analytics<br/>Manage Questions<br/>View Student Results<br/>Extend Attempt Timers"]
+    ST["Student"] --> ST_P["Take Interviews<br/>Take Aptitude Tests<br/>View Reports<br/>Download PDFs"]
+```
 
-    subgraph MasterPerms["Super Admin Permissions"]
-        M1[Create / Revoke Admins]
-        M2[Create / Revoke Users]
-        M3[View All Students]
-        M4[View All Admins]
-        M5[Manage API Keys]
-        M6[AI Usage Dashboard]
-    end
+---
 
-    subgraph AdminPerms["Admin Permissions"]
-        A1[Create Assessments]
-        A2[View Analytics]
-        A3[Manage Questions]
-        A4[View Student Results]
-        A5[Extend Attempt Timers]
-    end
+## Mock AI Interview Flow
 
-    subgraph StudentPerms["Student Permissions"]
-        S1[Take Interviews]
-        S2[Take Aptitude Tests]
-        S3[View Reports]
-        S4[Download PDFs]
-    end
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '28px'}}}%%
+sequenceDiagram
+    actor Student
+    participant FE as Frontend
+    participant BE as Backend
+    participant AI as Groq AI
 
-    SA --> MasterPerms
-    AD --> AdminPerms
-    ST --> StudentPerms
+    Student->>FE: Upload Resume + Select Domain
+    FE->>BE: POST /api/start
+    BE->>AI: ATS Analysis
+    AI-->>BE: Score + Skills
+    BE->>AI: Generate Question
+    AI-->>BE: Question
+    BE-->>FE: ATS Result + Question
+    FE-->>Student: Display
+
+    Note over Student,FE: Repeat for 10 questions
+
+    Student->>FE: Record Answer
+    FE->>BE: POST /api/answer_video
+    BE->>AI: Transcribe (Whisper) + Evaluate
+    AI-->>BE: 5 Metrics + Feedback + Next Question
+    BE-->>FE: Evaluation + Next Question
+
+    Student->>FE: End Interview
+    FE->>BE: POST /api/end
+    BE->>AI: Generate Full Report
+    AI-->>BE: Report
+    BE-->>FE: Full Report + PDF
+```
+
+---
+
+## Aptitude Assessment Flow
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '28px'}}}%%
+sequenceDiagram
+    actor Student
+    participant FE as Frontend
+    participant BE as Backend
+
+    Student->>FE: Browse Assessments
+    FE->>BE: GET /api/student/assessments
+    BE-->>FE: Published Assessments
+    FE-->>Student: Assessment List
+
+    Student->>FE: Start Assessment
+    FE->>BE: POST /api/student/assessments/:id/start
+    BE-->>FE: Questions + Timer
+    FE-->>Student: MCQ Interface
+
+    Student->>FE: Answer Questions
+    FE->>BE: PUT /api/student/attempts/:id/answers
+    BE-->>FE: Saved
+
+    Student->>FE: Submit
+    FE->>BE: POST /api/student/attempts/:id/submit
+    BE-->>FE: Score + Results
+    FE-->>Student: Result Summary
+```
+
+---
+
+## Admin Assessment Creation
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '28px'}}}%%
+sequenceDiagram
+    actor Admin
+    participant FE as Frontend
+    participant BE as Backend
+    participant AI as AI Provider
+
+    Admin->>FE: Configure + Upload Source
+    FE->>BE: POST /api/admin/assessments/generate
+    BE->>AI: Generate Questions
+    AI-->>BE: Questions
+    BE-->>FE: Assessment + Questions
+    FE-->>Admin: Review
+
+    Admin->>FE: Edit / Approve
+    FE->>BE: PUT /api/admin/assessments/:id/questions
+    BE-->>FE: Updated
+
+    Admin->>FE: Publish
+    FE->>BE: PATCH /api/admin/assessments/:id/status
+    BE-->>FE: Published
+```
+
+---
+
+## User Management
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '28px'}}}%%
+graph LR
+    C["Create Forms<br/>(Single + CSV Import)"] --> U["MongoDB Users"]
+    U --> A["Revoke / Restore / Delete"]
+    A --> U
 ```
 
 ---
@@ -300,149 +328,12 @@ The Vite dev server proxies `/api` requests to the configured backend URL.
 
 ---
 
-## Feature Deep Dive
-
-### Mock AI Interview
-
-```mermaid
-sequenceDiagram
-    actor Student
-    participant Frontend
-    participant Backend
-    participant Groq as Groq AI
-
-    Student->>Frontend: Select Domain & Role
-    Student->>Frontend: Upload Resume (PDF)
-    Frontend->>Backend: POST /api/start
-    Backend->>Groq: Analyze Resume (ATS)
-    Groq-->>Backend: ATS Score + Skills
-    Backend->>Groq: Generate First Question
-    Groq-->>Backend: Question
-    Backend-->>Frontend: ATS Score + Q1
-    Frontend-->>Student: Display Question
-
-    Student->>Frontend: Record Answer (Mic + Camera)
-    Frontend->>Backend: POST /api/answer_video
-    Backend->>Groq: Transcribe (Whisper)
-    Groq-->>Backend: Transcript
-    Backend->>Groq: Evaluate Answer
-    Groq-->>Backend: 5 Metrics + Feedback
-    Backend->>Groq: Generate Next Question
-    Groq-->>Backend: Next Question
-    Backend-->>Frontend: Evaluation + Q2
-    Frontend-->>Student: Feedback + Next Question
-
-    Note over Student,Frontend: Repeat for 10 questions
-
-    Student->>Frontend: End Interview
-    Frontend->>Backend: POST /api/end
-    Backend->>Groq: Generate Overall Report
-    Groq-->>Backend: Report
-    Backend-->>Frontend: Full Report
-    Frontend-->>Student: Charts + PDF Download
-```
-
-### Aptitude Assessments
-
-```mermaid
-sequenceDiagram
-    actor Student
-    participant Frontend
-    participant Backend
-
-    Student->>Frontend: Browse Assessments
-    Frontend->>Backend: GET /api/student/assessments
-    Backend-->>Frontend: Published Assessments
-    Frontend-->>Student: Assessment List
-
-    Student->>Frontend: Start Assessment
-    Frontend->>Backend: POST /api/student/assessments/:id/start
-    Backend-->>Frontend: Questions + Timer
-    Frontend-->>Student: MCQ Interface
-
-    Student->>Frontend: Answer Questions
-    Frontend->>Backend: PUT /api/student/attempts/:id/answers
-    Backend-->>Frontend: Saved
-
-    Student->>Frontend: Submit
-    Frontend->>Backend: POST /api/student/attempts/:id/submit
-    Backend-->>Frontend: Score + Results
-    Frontend-->>Student: Result Summary
-```
-
-### Admin Assessment Creation
-
-```mermaid
-sequenceDiagram
-    actor Admin
-    participant Frontend
-    participant Backend
-    participant AI as AI Provider
-
-    Admin->>Frontend: Configure Assessment
-    Admin->>Frontend: Upload Source File (optional)
-    Frontend->>Backend: POST /api/admin/assessments/generate
-    Backend->>AI: Generate Questions (batch)
-    AI-->>Backend: Questions
-    Backend-->>Frontend: Assessment + Questions
-    Frontend-->>Admin: Review Questions
-
-    Admin->>Frontend: Edit / Approve Questions
-    Frontend->>Backend: PUT /api/admin/assessments/:id/questions
-    Backend-->>Frontend: Updated
-
-    Admin->>Frontend: Publish
-    Frontend->>Backend: PATCH /api/admin/assessments/:id/status
-    Backend-->>Frontend: Published
-```
-
-### User & Access Management
-
-```mermaid
-flowchart LR
-    subgraph Creation["User Creation"]
-        direction LR
-        CA[Create Admin Form] --> BA[POST /api/master/admins]
-        CU[Create User Form] --> BU[POST /api/master/users/create-with-details]
-        CI[CSV/Excel Import] --> BI[POST /api/master/admins/import]
-    end
-
-    subgraph DB[(MongoDB Users)]
-        direction LR
-        MA[Master Admin]
-        AD[Admin]
-        ST[Student]
-    end
-
-    subgraph Actions["Management Actions"]
-        direction LR
-        RV[Revoke Access]
-        RS[Restore Access]
-        DL[Delete User]
-        RO[Change Role]
-    end
-
-    Creation --> DB
-    DB --> Actions
-    Actions --> DB
-```
-
----
-
 ## Components
 
-### Shared Components
-
 | Component | Purpose |
 |---|---|
-| `Sidebar` | Role-filtered navigation sidebar |
+| `Sidebar` | Role-filtered navigation |
 | `VoiceRecorder` | Mic/video recording with waveform |
-
-### Portal Components
-
-| Component | Purpose |
-|---|---|
-| `Sidebar` | Portal-styled student/admin sidebar |
 | `RoleGuard` | Role-based route protection |
 | `Timer` | Countdown with expiry callback |
 | `StatCard` | Color-coded statistics card |

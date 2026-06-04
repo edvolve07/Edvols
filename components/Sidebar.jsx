@@ -9,7 +9,12 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
   const path = usePathname();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const visibleItems = NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(user?.role));
+  const userModules = user?.modules_access || ["both"];
+  const visibleItems = NAV_ITEMS.filter((item) => {
+    if (item.roles && !item.roles.includes(user?.role)) return false;
+    if (item.modules && !item.modules.some((m) => userModules.includes(m))) return false;
+    return true;
+  });
   const activeHref = visibleItems
     .filter((item) => path === item.href || path.startsWith(`${item.href}/`))
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
