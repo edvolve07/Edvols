@@ -102,13 +102,17 @@ export default function ManualGenerationForm() {
     payload.append('generation_mode', form.generation_mode);
 
     if (form.start_time) {
-      payload.append('start_time', form.start_time);
-      payload.append('startTime', form.start_time);
+      const startDate = new Date(form.start_time);
+      const startISO = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
+      payload.append('start_time', startISO);
+      payload.append('startTime', startISO);
     }
 
     if (form.end_time) {
-      payload.append('end_time', form.end_time);
-      payload.append('endTime', form.end_time);
+      const endDate = new Date(form.end_time);
+      const endISO = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
+      payload.append('end_time', endISO);
+      payload.append('endTime', endISO);
     }
 
     if (form.file) payload.append('file', form.file);
