@@ -19,9 +19,9 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "@/src/navigation";
 import { apiFetch } from "@/lib/api";
-import { useAuth } from "@/src/portal/context/AuthContext";
+import useAuthStore from "@/src/stores/useAuthStore";
 
 const MODULE_LABELS = {
   both: "Full Access",
@@ -91,7 +91,7 @@ function Detail({ icon: Icon, label, value }) {
 }
 
 export default function ProfilePage() {
-  const { user, refresh } = useAuth();
+  const { user, refresh } = useAuthStore();
   const role = user?.role || "student";
   const roleContent = ROLE_CONTENT[role] || ROLE_CONTENT.student;
   const RoleIcon = roleContent.icon;

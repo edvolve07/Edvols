@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate } from "@/src/navigation";
 import {
   Award,
   BarChart3,
@@ -14,12 +14,13 @@ import {
   Mic2,
   Star,
   Target,
+  TrendingUp,
   Trophy,
 } from "lucide-react";
 import clsx from "clsx";
 import { METRIC_LABELS } from "@/src/constants";
 import { Link } from "@/src/navigation";
-import { useAuth } from "@/src/portal/context/AuthContext";
+import useAuthStore from "@/src/stores/useAuthStore";
 import { apiFetch, downloadCertificatePdf } from "@/lib/api";
 import { getTimeBasedGreeting } from "@/src/utils/timeGreeting";
 
@@ -30,17 +31,17 @@ const moduleLabels = {
   both: "All modules",
 };
 
-const toneClass = {
-  brand: "bg-brand-800 text-white",
-  green: "bg-accent-600 text-white",
-  amber: "bg-amber-500 text-white",
-  blue: "bg-brand-600 text-white",
+const tones = {
+  brand: { bg: "bg-brand-50", icon: "text-brand-700", ring: "ring-brand-200/50" },
+  green: { bg: "bg-accent-50", icon: "text-accent-600", ring: "ring-accent-200/50" },
+  amber: { bg: "bg-amber-50", icon: "text-amber-600", ring: "ring-amber-200/50" },
+  blue: { bg: "bg-brand-100", icon: "text-brand-700", ring: "ring-brand-200/50" },
 };
 
 const typeMeta = {
-  aptitude: { icon: BrainCircuit, tone: "bg-brand-700", label: "Aptitude" },
-  interview: { icon: Mic2, tone: "bg-brand-600", label: "Interview" },
-  programming: { icon: Code2, tone: "bg-amber-500", label: "Coding" },
+  aptitude: { icon: BrainCircuit, tone: "from-brand-700 to-brand-600", label: "Aptitude" },
+  interview: { icon: Mic2, tone: "from-brand-600 to-brand-500", label: "Interview" },
+  programming: { icon: Code2, tone: "from-amber-500 to-amber-400", label: "Coding" },
 };
 
 function formatPercent(value) {
@@ -80,7 +81,7 @@ function formatRelativeTime(value) {
 }
 
 function getTypeMeta(type) {
-  return typeMeta[type] || { icon: Target, tone: "bg-emerald-600", label: "Practice" };
+  return typeMeta[type] || { icon: Target, tone: "from-brand-600 to-brand-500", label: "Practice" };
 }
 
 function roleHome(role) {
@@ -89,8 +90,12 @@ function roleHome(role) {
   return null;
 }
 
+function SkeletonCard({ className }) {
+  return <div className={clsx("animate-pulse rounded-card-lg bg-slate-100", className)} />;
+}
+
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [dashboard, setDashboard] = useState(null);
   const [analyticsError, setAnalyticsError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -100,7 +105,7 @@ export default function DashboardPage() {
   const adminHome = roleHome(user?.role);
 
   useEffect(() => {
-    if (adminHome) return undefined;
+    if (adminHome) return;
 
     let isMounted = true;
     let intervalId;
@@ -132,7 +137,6 @@ export default function DashboardPage() {
   useEffect(() => {
     const updateGreeting = () => setGreeting(getTimeBasedGreeting());
     const intervalId = window.setInterval(updateGreeting, 60 * 1000);
-
     return () => window.clearInterval(intervalId);
   }, []);
 
@@ -195,7 +199,7 @@ export default function DashboardPage() {
         label: "Overall Progress",
         value: formatPercent(dashboard?.overall_progress),
         caption: `${enabledModuleLabels.length || 0} enabled module${enabledModuleLabels.length === 1 ? "" : "s"}`,
-        icon: BarChart3,
+        icon: TrendingUp,
         tone: "brand",
       },
     ];
@@ -230,14 +234,6 @@ export default function DashboardPage() {
       });
     }
 
-    cards.push({
-      label: "Interviews Saved",
-      value: interviewAnalytics?.reports || 0,
-      caption: `${interviewAnalytics?.average_percentage || 0}% avg score`,
-      icon: Mic2,
-      tone: "purple",
-    });
-
     return cards.slice(0, 4);
   }, [
     dashboard?.available_assessments,
@@ -256,104 +252,129 @@ export default function DashboardPage() {
   if (adminHome) return <Navigate to={adminHome} replace />;
 
   return (
-    <div className="mx-auto max-w-[1480px] px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8 animate-fade-in-up">
       <section className="mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             {greeting}, {firstName}
           </h1>
-          <p className="mt-1.5 text-base text-slate-500">
-            Your dashboard is synced to your current role, module access, and latest progress.
+          <p className="mt-1.5 text-sm text-slate-500">
+            Your placement readiness workspace
           </p>
         </div>
       </section>
 
       {analyticsError ? (
-        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+        <div className="mb-6 rounded-xl border border-red-100 bg-red-50 p-4 text-sm font-medium text-red-700 shadow-sm">
           {analyticsError}
         </div>
       ) : null}
 
-      <section className="mb-7 grid gap-5 lg:grid-cols-[1fr_1.1fr]">
-        <article className="rounded-lg border border-slate-200 bg-white p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="eyebrow">Placement Readiness Score</p>
-              <h2 className="mt-3 text-5xl font-bold leading-none text-slate-900">{readiness.score}</h2>
-              <p className="mt-2 text-sm font-semibold text-brand-700">{readiness.label}</p>
-            </div>
-            <div className="grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-700">
-              <Award className="h-7 w-7" />
-            </div>
-          </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-5">
-            {Object.entries({
-              Aptitude: readiness.components?.aptitude,
-              Coding: readiness.components?.coding,
-              Interview: readiness.components?.interview,
-              Consistency: readiness.components?.consistency,
-              Resume: readiness.components?.resume,
-            }).map(([label, value]) => (
-              <div key={label} className="rounded-lg bg-slate-50 p-3">
-                <p className="text-xs font-semibold text-slate-500">{label}</p>
-                <p className="mt-1 text-lg font-bold text-slate-900">{formatPercent(value)}</p>
+      <section className="mb-8 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+        {loading && !dashboard ? (
+          <>
+            <SkeletonCard className="h-52" />
+            <SkeletonCard className="h-52" />
+          </>
+        ) : (
+          <>
+            <article className="card-elevated card-breathe p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="eyebrow">Placement Readiness Score</p>
+                  <h2 className="stat-value-animate mt-2 text-5xl font-bold tracking-tight text-slate-900">{readiness.score}</h2>
+                  <p className="mt-1.5 text-sm font-semibold text-brand-700">{readiness.label}</p>
+                </div>
+                <div className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700 ring-1 ring-brand-200/50">
+                  <Award className="h-7 w-7" />
+                  <span className="ring-soft-pulse absolute inset-0 rounded-2xl ring-2 ring-brand-300/40" />
+                </div>
               </div>
-            ))}
-          </div>
-        </article>
 
-        <article className="rounded-lg border border-slate-200 bg-white p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="eyebrow">Streaks, Badges, XP</p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-900">{engagement.rank} Rank</h2>
-            </div>
-            <p className="rounded-lg bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700">{engagement.xp || 0} XP</p>
-          </div>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {(engagement.badges || []).map((badge) => (
-              <span key={badge.title} className="rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-800">
-                {badge.title}
-              </span>
-            ))}
-            {!engagement.badges?.length ? (
-              <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-500">
-                Complete milestones to earn badges
-              </span>
-            ) : null}
-          </div>
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-brand-600" style={{ width: `${readiness.score || 0}%` }} />
-          </div>
-        </article>
-      </section>
-
-      <section className="mb-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {statCards.map(({ label, value, caption, icon: Icon, tone }) => (
-          <article key={label} className="rounded-lg border border-slate-200 bg-white p-6">
-            <div className="flex items-center gap-5">
-              <div className={clsx("grid h-16 w-16 shrink-0 place-items-center rounded-full", toneClass[tone])}>
-                <Icon size={26} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-600">{label}</p>
-                <p className="mt-1 text-3xl font-bold leading-none text-slate-900">{loading && !dashboard ? "--" : value}</p>
-                <p className="mt-4 text-xs font-semibold text-brand-700">{caption}</p>
-                {label === "Overall Progress" ? (
-                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full rounded-full bg-brand-600" style={{ width: `${progress}%` }} />
+              <div className="mt-6 grid gap-2 sm:grid-cols-5">
+                {Object.entries({
+                  Aptitude: readiness.components?.aptitude,
+                  Coding: readiness.components?.coding,
+                  Interview: readiness.components?.interview,
+                  Consistency: readiness.components?.consistency,
+                  Resume: readiness.components?.resume,
+                }).map(([label, value]) => (
+                  <div key={label} className="rounded-lg bg-slate-50 p-3 ring-1 ring-slate-100">
+                    <p className="text-xs font-semibold text-slate-500">{label}</p>
+                    <p className="mt-1.5 text-lg font-bold text-slate-900">{formatPercent(value)}</p>
                   </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="card-elevated p-6">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="eyebrow">Streaks, Badges, XP</p>
+                  <h2 className="mt-2 text-2xl font-bold text-slate-900">{engagement.rank} Rank</h2>
+                </div>
+                <p className="rounded-xl bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 ring-1 ring-amber-200/50">
+                  {engagement.xp || 0} XP
+                </p>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {(engagement.badges || []).map((badge) => (
+                  <span key={badge.title} className="rounded-lg bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-800 ring-1 ring-brand-200/50">
+                    {badge.title}
+                  </span>
+                ))}
+                {!engagement.badges?.length ? (
+                  <span className="rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-400 ring-1 ring-slate-200/50">
+                    Complete milestones to earn badges
+                  </span>
                 ) : null}
               </div>
-            </div>
-          </article>
-        ))}
+              <div className="mt-5 progress-track">
+                <div className="progress-fill" style={{ width: `${readiness.score || 0}%` }} />
+              </div>
+            </article>
+          </>
+        )}
       </section>
 
-      <section className="mb-7 rounded-lg border border-slate-200 bg-white p-6">
-        <div className="flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-full bg-amber-100 text-amber-600">
-            <Trophy size={22} />
+      <section className="mb-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {loading && !dashboard ? (
+          <>
+            <SkeletonCard className="h-28" />
+            <SkeletonCard className="h-28" />
+            <SkeletonCard className="h-28" />
+            <SkeletonCard className="h-28" />
+          </>
+        ) : (
+          statCards.map(({ label, value, caption, icon: Icon, tone }, index) => {
+            const t = tones[tone];
+            return (
+              <article className={clsx("card-elevated card-glow-hover p-5 animate-fade-in-up", `animate-stagger-${index + 1}`)}>
+                <div className="flex items-center gap-4">
+                  <div className={clsx("grid h-11 w-11 shrink-0 place-items-center rounded-xl ring-1", t.bg, t.icon, t.ring)}>
+                    <Icon size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-slate-500">{label}</p>
+                    <p className="mt-0.5 text-2xl font-bold leading-none text-slate-900">{dashboard && !loading ? value : "--"}</p>
+                    <p className="mt-1 text-xs font-semibold text-brand-700 truncate">{caption}</p>
+                  </div>
+                </div>
+                {label === "Overall Progress" ? (
+                  <div className="mt-4 progress-track">
+                    <div className="progress-fill" style={{ width: `${progress}%` }} />
+                  </div>
+                ) : null}
+              </article>
+            );
+          })
+        )}
+      </section>
+
+      <section className="mb-8 card-elevated card-glow-hover p-5">
+        <div className="flex items-center gap-4">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-amber-200/50">
+            <Trophy size={20} />
           </div>
           <div>
             <p className="font-semibold text-slate-900">Weekly Goal</p>
@@ -362,163 +383,214 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
+        <div className="mt-4 progress-track h-2.5">
+          <div className="progress-fill" style={{ width: `${Math.min(100, ((weeklyGoal.completed || 0) / (weeklyGoal.target || 5)) * 100)}%` }} />
+        </div>
       </section>
 
-      <div className="grid gap-7 xl:grid-cols-[1.45fr_0.95fr]">
-        <div className="space-y-7">
-          <section className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="grid gap-8 xl:grid-cols-[1.4fr_1fr]">
+        <div className="space-y-8">
+          <section className="card-elevated card-glow-hover p-6">
             <h2 className="text-xl font-bold text-slate-900">Continue Learning</h2>
-            {continueItem ? (
-              <div className="mt-7 grid gap-5 md:grid-cols-[104px_1fr_auto] md:items-center">
-                <div className={clsx("grid h-24 w-24 place-items-center rounded-lg text-white", continueMeta.tone)}>
-                  <ContinueIcon size={44} />
+            {loading && !dashboard ? (
+              <div className="mt-6 space-y-4">
+                <div className="flex gap-5">
+                  <SkeletonCard className="h-24 w-24 shrink-0" />
+                  <div className="flex-1 space-y-3">
+                    <SkeletonCard className="h-5 w-3/4" />
+                    <SkeletonCard className="h-4 w-1/2" />
+                    <SkeletonCard className="h-3 w-full" />
+                  </div>
                 </div>
-                <div>
+              </div>
+            ) : continueItem ? (
+              <div className="mt-6 grid gap-5 md:grid-cols-[96px_1fr_auto] md:items-center">
+                <div className={clsx("grid h-24 w-24 shrink-0 place-items-center rounded-2xl bg-gradient-to-br", continueMeta.tone, "shadow-sm")}>
+                  <ContinueIcon size={40} className="text-white" />
+                </div>
+                <div className="min-w-0">
                   <h3 className="text-xl font-bold text-slate-900">{continueItem.title}</h3>
                   <p className="mt-1 text-sm font-medium text-slate-500">{continueItem.meta || continueMeta.label}</p>
-                  <div className="mt-5 flex items-center gap-3">
-                    <div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-brand-600" style={{ width: `${Math.max(0, Math.min(100, Number(continueItem.progress || progress)))}%` }} />
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="progress-track flex-1">
+                      <div className="progress-fill" style={{ width: `${Math.max(0, Math.min(100, Number(continueItem.progress || progress)))}%` }} />
                     </div>
                     <span className="text-sm font-semibold text-slate-600">
                       {formatPercent(continueItem.progress ?? progress)}
                     </span>
                   </div>
-                  <p className="mt-5 text-sm text-slate-500">
+                  <p className="mt-3 text-sm text-slate-500">
                     Latest update: {formatDateTime(continueItem.updated_at || dashboard?.generated_at)}
                   </p>
                 </div>
-                <Link href={continueItem.href || "/aptitude"} className="btn-primary whitespace-nowrap px-5 py-3">
+                <Link href={continueItem.href || "/aptitude"} className="btn-primary whitespace-nowrap">
                   {continueItem.action || "Continue"}
                 </Link>
               </div>
             ) : (
-              <div className="mt-7 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-6">
+              <div className="mt-6 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
                 <p className="font-semibold text-slate-900">No progress yet</p>
-                <p className="mt-2 text-sm text-slate-500">Start a practice session and this area will track your next step.</p>
+                <p className="mt-2 text-sm text-slate-500">Start a practice session — your next step appears here.</p>
               </div>
             )}
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-6">
+          <section className="card-elevated p-6">
             <div className="mb-5 flex items-center justify-between gap-3">
-              <h2 className="text-xl font-bold text-slate-900">Student Learning Path</h2>
-              <span className="text-xs font-semibold uppercase text-slate-400">Personalized</span>
+              <h2 className="text-xl font-bold text-slate-900">Learning Path</h2>
+              <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Personalized</span>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {(dashboard?.learning_path || []).slice(0, 5).map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className="rounded-lg border border-slate-200 bg-white p-4 transition hover:border-brand-200 hover:bg-brand-50/50"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase text-brand-700">{item.category}</p>
-                      <h3 className="mt-1 font-semibold text-slate-900">{item.title}</h3>
+            {loading && !dashboard ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                <SkeletonCard className="h-40" />
+                <SkeletonCard className="h-40" />
+              </div>
+            ) : (
+              <div className="hover-lift-group grid gap-4 md:grid-cols-2">
+                {(dashboard?.learning_path || []).slice(0, 5).map((item, index) => (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className={`hover-lift-child card-elevated p-4 transition-all animate-fade-in-up animate-stagger-${index + 1}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-brand-700">{item.category}</p>
+                        <h3 className="mt-1 font-semibold text-slate-900">{item.title}</h3>
+                      </div>
+                      <span
+                        className={clsx(
+                          "shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold uppercase",
+                          item.priority === "high"
+                            ? "bg-red-50 text-red-600 ring-1 ring-red-200/50"
+                            : item.priority === "medium"
+                              ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200/50"
+                              : "bg-accent-50 text-accent-700 ring-1 ring-accent-200/50",
+                        )}
+                      >
+                        {item.priority}
+                      </span>
                     </div>
-                    <span
-                      className={clsx(
-                        "rounded-md px-2 py-1 text-[11px] font-semibold uppercase",
-                        item.priority === "high"
-                          ? "bg-red-50 text-red-600"
-                          : item.priority === "medium"
-                            ? "bg-amber-50 text-amber-700"
-                            : "bg-accent-50 text-accent-700",
-                      )}
-                    >
-                      {item.priority}
-                    </span>
+                    <p className="mt-3 text-sm leading-6 text-slate-600 line-clamp-2">{item.task}</p>
+                    <div className="mt-4 progress-track">
+                      <div className="progress-fill" style={{ width: `${Math.max(0, Math.min(100, Number(item.progress || 0)))}%` }} />
+                    </div>
+                  </Link>
+                ))}
+                {!dashboard?.learning_path?.length ? (
+                  <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-sm text-slate-500 md:col-span-2">
+                    Your learning path will appear after your first activity.
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{item.task}</p>
-                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full rounded-full bg-brand-600" style={{ width: `${Math.max(0, Math.min(100, Number(item.progress || 0)))}%` }} />
-                  </div>
-                </Link>
-              ))}
-              {!dashboard?.learning_path?.length ? (
-                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-500 md:col-span-2">
-                  Your learning path will appear after your first activity.
-                </div>
-              ) : null}
-            </div>
+                ) : null}
+              </div>
+            )}
           </section>
 
           {hasInterview ? (
-            <section className="overflow-hidden rounded-lg border border-brand-100 bg-brand-50 p-6">
-              <div className="grid gap-6 md:grid-cols-[1fr_310px] md:items-center">
+            <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 p-6 shadow-card-elevated sm:p-8">
+              <div className="absolute right-5 top-5 flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-300">Live</span>
+              </div>
+              <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/[0.06]" />
+              <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/[0.04]" />
+              <div className="relative grid gap-6 md:grid-cols-[1fr_240px] md:items-center">
                 <div>
-                  <h2 className="text-xl font-bold text-brand-900">AI interview feedback</h2>
-                  <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-emerald-200">AI Mock Interview</p>
+                  <h2 className="mt-2 text-2xl font-bold text-white">AI Interview Feedback</h2>
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-emerald-100/80">
                     Latest average: {formatPercent(interviewAnalytics?.average_percentage)} across {interviewAnalytics?.reports || 0} saved report{interviewAnalytics?.reports === 1 ? "" : "s"}.
                   </p>
-                  <Link href="/interview" className="btn-primary mt-5 px-5 py-3">
+                  <Link
+                    href="/interview"
+                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-brand-800 shadow-md transition hover:bg-emerald-50 active:scale-[0.97]"
+                  >
                     Try AI Mock Interview
                   </Link>
                 </div>
-                <div className="relative hidden h-36 md:block">
-                  <div className="absolute right-6 top-1 grid h-28 w-28 place-items-center rounded-full bg-white">
-                    <Bot size={58} className="text-brand-700" />
+                <div className="hidden md:flex justify-center">
+                  <div className="grid h-28 w-28 place-items-center rounded-2xl bg-white/10 backdrop-blur ring-1 ring-white/20">
+                    <Bot size={56} className="text-white/80" />
                   </div>
-                  <div className="absolute bottom-5 left-4 h-12 w-24 rounded-lg bg-white/70" />
-                  <div className="absolute right-0 top-16 h-14 w-24 rounded-lg bg-brand-100/80" />
                 </div>
               </div>
             </section>
           ) : null}
         </div>
 
-        <aside className="space-y-5">
-          <section className="rounded-lg border border-slate-200 bg-white p-6">
+        <aside className="space-y-6">
+          {loading && !dashboard ? (
+            <>
+              <SkeletonCard className="h-36" />
+              <SkeletonCard className="h-44" />
+              <SkeletonCard className="h-52" />
+              <SkeletonCard className="h-52" />
+              <SkeletonCard className="h-44" />
+              <SkeletonCard className="h-48" />
+            </>
+          ) : (
+            <>
+          <section className="card-elevated p-5 animate-fade-in-up animate-stagger-5">
             <div className="mb-4 flex items-center gap-2">
-              <CalendarDays size={18} className="text-slate-500" />
-              <h2 className="text-lg font-bold text-slate-900">Role Focus</h2>
+              <CalendarDays size={16} className="text-slate-400" />
+              <h2 className="text-base font-bold text-slate-900">Role Focus</h2>
             </div>
-            <h3 className="text-lg font-bold text-brand-700">
+            <h3 className="text-base font-bold text-brand-700">
               {dashboard?.user?.interested_role || user?.interested_role || "Skill preparation"}
             </h3>
-            <p className="mt-1 text-sm font-medium text-slate-600">
+            <p className="mt-1 text-sm text-slate-500">
               {enabledModuleLabels.length ? enabledModuleLabels.join(", ") : "Student workspace"}
             </p>
             <div className="mt-5 flex items-center justify-between gap-3">
-              <p className="text-sm text-slate-600">
-                Weekly goal: {weeklyGoal.raw_completed || weeklyGoal.completed || 0}/{weeklyGoal.target || 5} sessions
+              <p className="text-xs text-slate-500">
+                Weekly: {weeklyGoal.raw_completed || weeklyGoal.completed || 0}/{weeklyGoal.target || 5}
               </p>
-              <Link href={hasInterview ? "/interview" : hasProgramming ? "/programming/practice" : "/aptitude"} className="btn-primary whitespace-nowrap px-5 py-3">
+              <Link
+                href={hasInterview ? "/interview" : hasProgramming ? "/programming/practice" : "/aptitude"}
+                className="btn-primary whitespace-nowrap"
+              >
                 Practice
               </Link>
             </div>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-6">
+          <section className="card-elevated p-5 animate-fade-in-up animate-stagger-6">
             <div className="mb-4 flex items-center gap-2">
-              <FileText className="h-5 w-5 text-brand-700" />
-              <h2 className="text-lg font-bold text-slate-900">Resume Builder</h2>
+              <FileText className="h-5 w-5 text-brand-600" />
+              <h2 className="text-base font-bold text-slate-900">Resume Builder</h2>
             </div>
             <p className="text-sm text-slate-600">
-              Latest ATS score: <span className="font-semibold text-brand-800">{dashboard?.resume_builder?.latest_version?.ats_score || 0}</span>
+              Latest ATS score:{" "}
+              <span className="font-semibold text-brand-800">
+                {dashboard?.resume_builder?.latest_version?.ats_score || 0}
+              </span>
             </p>
             {dashboard?.resume_builder?.latest_version?.improvements?.length ? (
-              <p className="mt-3 text-xs leading-5 text-slate-500">{dashboard.resume_builder.latest_version.improvements[0]}</p>
+              <p className="mt-3 text-xs leading-5 text-slate-500 line-clamp-2">
+                {dashboard.resume_builder.latest_version.improvements[0]}
+              </p>
             ) : null}
-            <Link href="/resume-builder" className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-brand-200 px-4 py-2.5 text-sm font-semibold text-brand-800 hover:bg-brand-50">
+            <Link href="/resume-builder" className="btn-secondary mt-4 w-full justify-center">
               Improve Resume
             </Link>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-6">
+          <section className="card-elevated p-5 animate-fade-in-up animate-stagger-7">
             <div className="mb-5 flex items-center gap-2">
-              <Award className="h-5 w-5 text-brand-700" />
-              <h2 className="text-lg font-bold text-slate-900">Certificates</h2>
+              <Award className="h-5 w-5 text-brand-600" />
+              <h2 className="text-base font-bold text-slate-900">Certificates</h2>
             </div>
             <div className="space-y-3">
               {(dashboard?.certificates?.issued || []).map((certificate) => (
-                <div key={certificate.id || certificate._id} className="rounded-lg border border-brand-100 bg-brand-50 p-3">
+                <div key={certificate.id || certificate._id} className="rounded-xl bg-brand-50 p-3 ring-1 ring-brand-200/50">
                   <p className="text-sm font-semibold text-slate-900">{certificate.title}</p>
                   <button
                     type="button"
                     onClick={() => downloadCertificatePdf(certificate.id || certificate._id)}
-                    className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-brand-700"
+                    className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-brand-700 hover:text-brand-800"
                   >
                     <Download className="h-3.5 w-3.5" />
                     Download PDF
@@ -526,65 +598,93 @@ export default function DashboardPage() {
                 </div>
               ))}
               {(dashboard?.certificates?.milestones || [])
-                .filter((milestone) => milestone.eligible && !(dashboard?.certificates?.issued || []).some((item) => item.milestone === milestone.milestone))
+                .filter(
+                  (milestone) =>
+                    milestone.eligible &&
+                    !(dashboard?.certificates?.issued || []).some((item) => item.milestone === milestone.milestone),
+                )
                 .map((milestone) => (
                   <button
                     key={milestone.milestone}
                     type="button"
                     onClick={() => issueCertificate(milestone.milestone)}
                     disabled={certificateBusy === milestone.milestone}
-                    className="w-full rounded-lg border border-brand-200 bg-white px-3 py-2 text-left text-sm font-semibold text-brand-800 hover:bg-brand-50 disabled:opacity-60"
+                    className="w-full rounded-xl border border-brand-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-brand-800 transition hover:bg-brand-50 disabled:opacity-60"
                   >
-                    {certificateBusy === milestone.milestone ? "Generating..." : `Generate: ${milestone.title}`}
+                    {certificateBusy === milestone.milestone
+                      ? "Generating..."
+                      : `Generate: ${milestone.title}`}
                   </button>
                 ))}
-              {!dashboard?.certificates?.issued?.length && !(dashboard?.certificates?.milestones || []).some((milestone) => milestone.eligible) ? (
-                <p className="text-sm text-slate-500">Eligible certificates will appear after milestone completion.</p>
-              ) : null}
-            </div>
-          </section>
-
-          <section className="rounded-lg border border-slate-200 bg-white p-6">
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">Recent Activity</h2>
-              <Link href="/reports" className="text-sm font-semibold text-brand-700 hover:text-brand-900">
-                View all
-              </Link>
-            </div>
-            <div className="space-y-5">
-              {(dashboard?.recent_activity || []).map((activity) => {
-                const meta = getTypeMeta(activity.type);
-                const Icon = activity.score >= 80 || activity.result === "Accepted" ? CheckCircle2 : activity.type === "aptitude" ? Star : meta.icon;
-                return (
-                  <Link key={`${activity.type}-${activity.id}`} href={activity.href || "/dashboard"} className="flex items-center gap-4 rounded-lg transition hover:bg-brand-50/60">
-                    <div className={clsx("grid h-10 w-10 shrink-0 place-items-center rounded-full text-white", meta.tone)}>
-                      <Icon size={18} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-slate-900">{activity.title}</p>
-                      <p className="text-sm text-slate-500">{activity.meta}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-slate-500">{formatRelativeTime(activity.occurred_at)}</p>
-                      <p className="mt-1 text-sm font-semibold capitalize text-brand-700">
-                        {Number.isFinite(Number(activity.score)) ? formatPercent(activity.score) : activity.result}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-
-              {!dashboard?.recent_activity?.length ? (
-                <p className="rounded-lg bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-                  No activity yet.
+              {!dashboard?.certificates?.issued?.length &&
+              !(dashboard?.certificates?.milestones || []).some((m) => m.eligible) ? (
+                <p className="text-sm text-slate-500">
+                  Eligible certificates will appear after milestone completion.
                 </p>
               ) : null}
             </div>
           </section>
 
+          <section className="card-elevated p-5 animate-fade-in-up animate-stagger-8">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-base font-bold text-slate-900">Recent Activity</h2>
+              <Link href="/reports" className="text-sm font-semibold text-brand-700 hover:text-brand-800">
+                View all
+              </Link>
+            </div>
+            {loading && !dashboard ? (
+              <div className="space-y-4">
+                <SkeletonCard className="h-14" />
+                <SkeletonCard className="h-14" />
+                <SkeletonCard className="h-14" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(dashboard?.recent_activity || []).map((activity) => {
+                  const meta = getTypeMeta(activity.type);
+                  const Icon =
+                    activity.score >= 80 || activity.result === "Accepted"
+                      ? CheckCircle2
+                      : activity.type === "aptitude"
+                        ? Star
+                        : meta.icon;
+                  return (
+                    <Link
+                      key={`${activity.type}-${activity.id}`}
+                      href={activity.href || "/dashboard"}
+                      className="flex items-center gap-3 rounded-xl p-2.5 transition hover:bg-brand-50/60"
+                    >
+                      <div className={clsx("grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br text-white", meta.tone)}>
+                        <Icon size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-slate-900">{activity.title}</p>
+                        <p className="text-xs text-slate-500">{activity.meta}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-xs text-slate-400">{formatRelativeTime(activity.occurred_at)}</p>
+                        <p className="mt-0.5 text-xs font-semibold text-brand-700">
+                          {Number.isFinite(Number(activity.score))
+                            ? formatPercent(activity.score)
+                            : activity.result}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+
+                {!dashboard?.recent_activity?.length ? (
+                  <p className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                    No activity yet.
+                  </p>
+                ) : null}
+              </div>
+            )}
+          </section>
+
           {focusMetrics.length ? (
-            <section className="rounded-lg border border-slate-200 bg-white p-6">
-              <h2 className="text-lg font-bold text-slate-900">Focus Metrics</h2>
+            <section className="card-elevated p-5 animate-fade-in-up animate-stagger-9">
+              <h2 className="text-base font-bold text-slate-900">Focus Metrics</h2>
               <div className="mt-5 space-y-4">
                 {focusMetrics.map((metric) => (
                   <div key={metric.key}>
@@ -592,14 +692,16 @@ export default function DashboardPage() {
                       <span className="font-semibold text-slate-600">{metric.label}</span>
                       <span className="font-semibold text-slate-900">{metric.value}%</span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-brand-600" style={{ width: `${metric.value}%` }} />
+                    <div className="progress-track">
+                      <div className="progress-fill" style={{ width: `${metric.value}%` }} />
                     </div>
                   </div>
                 ))}
               </div>
             </section>
           ) : null}
+            </>
+          )}
         </aside>
       </div>
     </div>

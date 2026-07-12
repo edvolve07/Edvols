@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../navigation';
 import { ArrowLeft, GraduationCap, Mail } from 'lucide-react';
-import { useToast } from '../context/ToastContext';
+import useToastStore from '../../stores/useToastStore';
 import { apiFetch } from '../utils/api';
 
 export default function ForgotPassword() {
-  const toast = useToast();
+  const toast = useToastStore();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);

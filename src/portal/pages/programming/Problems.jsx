@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from '../../../navigation';
 import { Code2, Search, ChevronRight, BookOpen, AlertTriangle, ArrowLeft, CheckCircle2, Filter } from 'lucide-react';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
 import { apiFetch } from '../../utils/api';

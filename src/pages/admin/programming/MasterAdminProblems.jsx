@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@/src/navigation';
 import { Plus, Code2, Edit, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 

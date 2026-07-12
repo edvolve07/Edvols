@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from '../../../navigation';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
 import { apiFetch } from '../../utils/api';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../../navigation';
 import { Plus, Code2, Edit, Trash2, CalendarDays, Trophy } from 'lucide-react';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
 import { apiFetch } from '../../utils/api';

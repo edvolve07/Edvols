@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link } from '@/src/navigation';
 import {
   ArrowLeft, CheckCircle2, AlertTriangle, Lightbulb,
   BarChart3, Target, BookOpen, TrendingUp, MessageSquareText,

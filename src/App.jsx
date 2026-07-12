@@ -1,5 +1,4 @@
 import { ChevronDown, Flame, Menu, Search, Sparkles } from "lucide-react";
-import { Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AccessRevoked from "@/src/pages/AccessRevoked";
 import AdminsList from "@/src/pages/admin/AdminsList";
@@ -28,7 +27,7 @@ import { APP_NAME } from "./constants";
 import RoleGuard from "./portal/components/RoleGuard";
 import PortalSidebar from "./portal/components/Sidebar";
 import PortalLoadingSkeleton from "./portal/components/LoadingSkeleton";
-import { useAuth } from "./portal/context/AuthContext";
+import useAuthStore from "./stores/useAuthStore";
 import ForgotPassword from "./portal/pages/ForgotPassword";
 import PortalLogin from "./portal/pages/Login";
 import ResetPassword from "./portal/pages/ResetPassword";
@@ -64,10 +63,11 @@ import MasterAdminAssessmentResults from "./pages/admin/programming/MasterAdminA
 import CommunicationPage from "./pages/CommunicationPage";
 import CommunicationReport from "./pages/CommunicationReport";
 import AdminCommunicationAnalytics from "./pages/admin/AdminCommunicationAnalytics";
+import { Switch, Route, Navigate, useLocation, useNavigate, useParams } from "./navigation";
 
 function AppShell({ children }) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const pathname = useLocation().pathname;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -93,7 +93,7 @@ function AppShell({ children }) {
   }, [user]);
 
   return (
-    <div className="flex min-h-screen bg-canvas" style={{ "--app-sidebar-width": `${sidebarWidth}px` }}>
+    <div className="flex min-h-screen" style={{ backgroundColor: "var(--canvas-bg)", "--app-sidebar-width": `${sidebarWidth}px` }}>
       {sidebarOpen ? (
         <button
           type="button"
@@ -108,20 +108,21 @@ function AppShell({ children }) {
         width={sidebarWidth}
         onWidthChange={setSidebarWidth}
       />
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:pl-[var(--app-sidebar-width)]">
-        <header className="sticky top-0 z-30 flex h-[76px] items-center gap-3 border-b border-slate-200 bg-white/85 px-4 backdrop-blur-xl sm:px-6 lg:px-10">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:pl-[calc(var(--app-sidebar-width)+24px)]">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200/80 bg-white/75 px-4 backdrop-blur-2xl shadow-panel sm:px-6 lg:px-8">
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-brand-400/20 to-transparent animate-shimmer-slide" style={{ backgroundSize: "200% 100%" }} />
           <button
             type="button"
             aria-label="Open sidebar"
             onClick={() => setSidebarOpen(true)}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 lg:hidden"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 active:scale-95 lg:hidden"
           >
-            <Menu size={20} />
+            <Menu size={18} />
           </button>
 
           <div className="hidden flex-1 justify-center md:flex">
-            <label className="flex h-12 w-full max-w-[520px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-slate-500">
-              <Search size={19} className="text-slate-400" />
+            <label className="flex h-10 w-full max-w-[480px] items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3.5 text-slate-400 transition-all duration-300 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:shadow-sm focus-within:shadow-brand-500/10">
+              <Search size={16} className="transition-colors duration-300 group-focus-within:text-brand-500" />
               <input
                 type="search"
                 placeholder="Search topics, questions, or tests..."
@@ -131,26 +132,26 @@ function AppShell({ children }) {
           </div>
 
           <div className="min-w-0 flex-1 md:hidden">
-            <p className="text-base font-bold leading-none text-slate-900">{APP_NAME}</p>
-            <p className="mt-0.5 text-[11px] font-medium text-slate-500">Unified prep workspace</p>
+            <p className="text-sm font-bold leading-none text-slate-900">{APP_NAME}</p>
+            <p className="mt-0.5 text-[11px] font-medium text-slate-400">Unified prep workspace</p>
           </div>
 
           {(user?.role === "admin" || user?.role === "master_admin") && (
-            <div className="hidden md:flex items-center gap-1.5 text-xs font-medium text-slate-400 ml-4">
-              <span className="text-slate-500">/</span>
-              <span className="text-slate-700 font-semibold capitalize">
+            <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 ml-2">
+              <span className="text-slate-300">/</span>
+              <span className="text-slate-700 font-semibold">
                 {user?.role === "master_admin" ? "Master Admin" : "Admin"}
               </span>
-              <span className="text-slate-500">/</span>
-              <span className="text-slate-500">
+              <span className="text-slate-300">/</span>
+              <span className="text-slate-400">
                 {pathname.split("/").pop()?.replace(/-/g, " ") || "Dashboard"}
               </span>
             </div>
           )}
 
           {user?.role !== "admin" && user?.role !== "master_admin" ? (
-            <button className="hidden h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 sm:inline-flex">
-              <Flame size={17} className="text-amber-500" />
+            <button className="hidden h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 active:scale-95 sm:inline-flex badge-pulse">
+              <Flame size={16} className="text-amber-500" />
               {streak}
             </button>
           ) : null}
@@ -158,12 +159,13 @@ function AppShell({ children }) {
           <button
             type="button"
             onClick={() => navigate("/profile")}
-            className="inline-flex shrink-0 items-center gap-3 rounded-xl px-1 py-1 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-2"
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg px-1 py-1 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95 sm:px-2"
           >
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-brand-800 text-sm font-bold text-white">
+            <span className="relative grid h-9 w-9 place-items-center rounded-full bg-brand-800 text-sm font-bold text-white ring-2 ring-brand-300/40">
               {(user?.name || "U").slice(0, 1).toUpperCase()}
+              <span className="ring-soft-pulse absolute inset-0 rounded-full ring-2 ring-brand-400/30" />
             </span>
-            <span className="hidden max-w-36 truncate sm:inline">{user?.name || "User"}</span>
+            <span className="hidden max-w-28 truncate sm:inline">{user?.name || "User"}</span>
           </button>
         </header>
 
@@ -175,16 +177,16 @@ function AppShell({ children }) {
   );
 }
 
-function RequireSession() {
-  const { user, loading, revoked } = useAuth();
+function RequireSession({ children }) {
+  const { user, loading, revoked } = useAuthStore();
   if (loading) return <PortalLoadingSkeleton label="Checking session" />;
   if (revoked) return <Navigate to="/access-revoked" replace />;
   if (!user) return <Navigate to="/login" replace />;
-  return <Outlet />;
+  return children;
 }
 
 function AuthLanding() {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuthStore();
   if (loading) return <PortalLoadingSkeleton label="Checking session" />;
   if (!user) return <Navigate to="/login" replace />;
   return <Navigate to={homeForRole(user.role)} replace />;
@@ -201,104 +203,345 @@ function homeForRole(role) {
   return "/dashboard";
 }
 
-function RequireRole({ roles }) {
-  const { user, loading, revoked } = useAuth();
+function RequireRole({ roles, children }) {
+  const { user, loading, revoked } = useAuthStore();
   if (loading) return <PortalLoadingSkeleton label="Checking session" />;
   if (revoked) return <Navigate to="/access-revoked" replace />;
   if (!user) return <Navigate to="/login" replace />;
   if (!roles.includes(user.role)) return <Navigate to={homeForRole(user.role)} replace />;
-  return <Outlet />;
+  return children;
 }
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<AuthLanding />} />
-      <Route path="/login" element={<PortalLogin />} />
-      <Route path="/access-revoked" element={<AccessRevoked />} />
-      <Route path="/signup" element={<PortalSignup />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+    <Switch>
+      <Route path="/" component={AuthLanding} />
+      <Route path="/login" component={PortalLogin} />
+      <Route path="/signup" component={PortalSignup} />
+      <Route path="/access-revoked" component={AccessRevoked} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
 
-      <Route element={<RequireSession />}>
-        <Route path="/dashboard" element={<AppShell><DashboardPage /></AppShell>} />
-        <Route path="/interview" element={<AppShell><InterviewPage /></AppShell>} />
-        <Route path="/aptitude" element={<AppShell><AptitudePage /></AppShell>} />
-        <Route path="/aptitude/:assessmentId/start" element={<AppShell><AptitudePage /></AppShell>} />
-        <Route path="/aptitude/results" element={<AppShell><AptitudePage /></AppShell>} />
-        <Route path="/aptitude/results/:attemptId" element={<AppShell><AptitudePage /></AppShell>} />
-        <Route path="/programming" element={<AppShell><ProgrammingLanding /></AppShell>} />
-        <Route path="/programming/practice" element={<AppShell><PracticeTopics /></AppShell>} />
-        <Route path="/programming/practice/topics/:topicName" element={<AppShell><ProgrammingProblems /></AppShell>} />
-        <Route path="/programming/practice/problems/:id" element={<AppShell><ProblemView /></AppShell>} />
-        <Route path="/programming/practice/submissions" element={<AppShell><ProgrammingSubmissions /></AppShell>} />
-        <Route path="/programming/assessments" element={<AppShell><AssessmentList /></AppShell>} />
-        <Route path="/programming/assessments/:assessmentId" element={<AppShell><TakeAssessment /></AppShell>} />
-        <Route path="/programming/assessments/results/:attemptId" element={<AppShell><AssessmentResult /></AppShell>} />
-        <Route path="/report" element={<AppShell><ReportPage /></AppShell>} />
-        <Route path="/reports" element={<AppShell><ReportsResultsPage /></AppShell>} />
-        <Route path="/reports/results/:attemptId" element={<AppShell><ReportsResultDetailsRoute /></AppShell>} />
-        <Route path="/resume-builder" element={<AppShell><ResumeBuilderPage /></AppShell>} />
-        <Route path="/profile" element={<AppShell><ProfilePage /></AppShell>} />
-        <Route path="/communication" element={<AppShell><CommunicationPage /></AppShell>} />
-        <Route path="/communication/report" element={<AppShell><CommunicationReport /></AppShell>} />
+      <Route path="/dashboard">
+        <RequireSession>
+          <AppShell><DashboardPage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/interview">
+        <RequireSession>
+          <AppShell><InterviewPage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/aptitude">
+        <RequireSession>
+          <AppShell><AptitudePage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/aptitude/:assessmentId/start">
+        <RequireSession>
+          <AppShell><AptitudePage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/aptitude/results">
+        <RequireSession>
+          <AppShell><AptitudePage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/aptitude/results/:attemptId">
+        <RequireSession>
+          <AppShell><AptitudePage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/programming">
+        <RequireSession>
+          <AppShell><ProgrammingLanding /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/programming/practice">
+        <RequireSession>
+          <AppShell><PracticeTopics /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/programming/practice/topics/:topicName">
+        <RequireSession>
+          <AppShell><ProgrammingProblems /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/programming/practice/problems/:id">
+        <RequireSession>
+          <AppShell><ProblemView /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/programming/practice/submissions">
+        <RequireSession>
+          <AppShell><ProgrammingSubmissions /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/programming/assessments">
+        <RequireSession>
+          <AppShell><AssessmentList /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/programming/assessments/:assessmentId">
+        <RequireSession>
+          <AppShell><TakeAssessment /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/programming/assessments/results/:attemptId">
+        <RequireSession>
+          <AppShell><AssessmentResult /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/report">
+        <RequireSession>
+          <AppShell><ReportPage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/reports">
+        <RequireSession>
+          <AppShell><ReportsResultsPage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/reports/results/:attemptId">
+        <RequireSession>
+          <AppShell><ReportsResultDetailsRoute /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/resume-builder">
+        <RequireSession>
+          <AppShell><ResumeBuilderPage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/profile">
+        <RequireSession>
+          <AppShell><ProfilePage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/communication">
+        <RequireSession>
+          <AppShell><CommunicationPage /></AppShell>
+        </RequireSession>
+      </Route>
+      <Route path="/communication/report">
+        <RequireSession>
+          <AppShell><CommunicationReport /></AppShell>
+        </RequireSession>
       </Route>
 
-      <Route element={<RequireRole roles={["admin"]} />}>
-        <Route path="/admin/dashboard" element={<AppShell><EdvolsAdminDashboard /></AppShell>} />
-        <Route path="/admin-dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="/admin/analytics/aptitude" element={<AppShell><AdminAptitudeAnalytics /></AppShell>} />
-        <Route path="/admin/analytics/interviews" element={<AppShell><AdminInterviewAnalytics /></AppShell>} />
-        <Route path="/admin/analytics/communication" element={<AppShell><AdminCommunicationAnalytics /></AppShell>} />
-        <Route path="/admin/assessments" element={<AppShell><AdminAssessments /></AppShell>} />
-        <Route path="/admin/assessments/create" element={<AppShell><CreateAssessment /></AppShell>} />
-        <Route path="/admin/assessments/:id/questions" element={<AppShell><QuestionReview /></AppShell>} />
-        <Route path="/admin/assessments/:id/results" element={<AppShell><AssessmentResults /></AppShell>} />
-        <Route path="/admin/programming/analytics/students" element={<AppShell><AdminProgrammingAnalytics /></AppShell>} />
-        <Route path="/admin/programming/assessments" element={<AppShell><AdminAssessmentList /></AppShell>} />
-        <Route path="/admin/programming/assessments/create" element={<AppShell><AdminAssessmentForm /></AppShell>} />
-        <Route path="/admin/programming/assessments/:assessmentId/problems" element={<AppShell><AdminAssessmentForm /></AppShell>} />
-        <Route path="/admin/programming/assessments/:assessmentId/results" element={<AppShell><AdminAssessmentResults /></AppShell>} />
+      <Route path="/admin/dashboard">
+        <RequireRole roles={["admin"]}>
+          <AppShell><EdvolsAdminDashboard /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin-dashboard">
+        <Navigate to="/admin/dashboard" replace />
+      </Route>
+      <Route path="/admin/analytics/aptitude">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminAptitudeAnalytics /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/analytics/interviews">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminInterviewAnalytics /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/analytics/communication">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminCommunicationAnalytics /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/assessments">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminAssessments /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/assessments/create">
+        <RequireRole roles={["admin"]}>
+          <AppShell><CreateAssessment /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/assessments/:id/questions">
+        <RequireRole roles={["admin"]}>
+          <AppShell><QuestionReview /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/assessments/:id/results">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AssessmentResults /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/programming">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminProgrammingProblems /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/programming/create">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminProgrammingProblemForm /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/programming/:id/edit">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminProgrammingProblemForm /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/programming/analytics/students">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminProgrammingAnalytics /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/programming/assessments">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminAssessmentList /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/programming/assessments/create">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminAssessmentForm /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/programming/assessments/:assessmentId/problems">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminAssessmentForm /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/admin/programming/assessments/:assessmentId/results">
+        <RequireRole roles={["admin"]}>
+          <AppShell><AdminAssessmentResults /></AppShell>
+        </RequireRole>
       </Route>
 
-      <Route element={<RequireRole roles={["master_admin"]} />}>
-        <Route path="/master-admin/dashboard" element={<AppShell><MasterAdminDashboard /></AppShell>} />
-        <Route path="/master-admin-dashboard" element={<Navigate to="/master-admin/dashboard" replace />} />
-        <Route path="/master-admin/students" element={<AppShell><StudentsList /></AppShell>} />
-        <Route path="/master-admin/admins" element={<AppShell><AdminsList /></AppShell>} />
-        <Route path="/master-admin/master-admins" element={<AppShell><MasterAdminsList /></AppShell>} />
-        <Route path="/master-admin/institutions" element={<AppShell><InstitutionsPage /></AppShell>} />
-        <Route path="/master-admin/institutions/:id" element={<AppShell><InstitutionDetailPage /></AppShell>} />
-        <Route path="/master-admin/create-admin" element={<AppShell><CreateAdmin /></AppShell>} />
-        <Route path="/master-admin/create-user" element={<AppShell><CreateUser /></AppShell>} />
-        <Route path="/master-admin/ai-usage" element={<AppShell><AiUsagePage /></AppShell>} />
-        <Route path="/master-admin/programming" element={<AppShell><MasterAdminProblems /></AppShell>} />
-        <Route path="/master-admin/programming/create" element={<AppShell><MasterAdminProblemForm /></AppShell>} />
-        <Route path="/master-admin/programming/:id/edit" element={<AppShell><MasterAdminProblemForm /></AppShell>} />
-        <Route path="/master-admin/programming/assessments" element={<AppShell><MasterAdminAssessmentList /></AppShell>} />
-        <Route path="/master-admin/programming/assessments/create" element={<AppShell><MasterAdminAssessmentForm /></AppShell>} />
-        <Route path="/master-admin/programming/assessments/:assessmentId/problems" element={<AppShell><MasterAdminAssessmentForm /></AppShell>} />
-        <Route path="/master-admin/programming/assessments/:assessmentId/results" element={<AppShell><MasterAdminAssessmentResults /></AppShell>} />
+      <Route path="/master-admin/dashboard">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><MasterAdminDashboard /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin-dashboard">
+        <Navigate to="/master-admin/dashboard" replace />
+      </Route>
+      <Route path="/master-admin/students">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><StudentsList /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/admins">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><AdminsList /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/master-admins">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><MasterAdminsList /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/institutions">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><InstitutionsPage /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/institutions/:id">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><InstitutionDetailPage /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/create-admin">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><CreateAdmin /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/create-user">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><CreateUser /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/ai-usage">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><AiUsagePage /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/programming">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><MasterAdminProblems /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/programming/create">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><MasterAdminProblemForm /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/programming/:id/edit">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><MasterAdminProblemForm /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/programming/assessments">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><MasterAdminAssessmentList /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/programming/assessments/create">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><MasterAdminAssessmentForm /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/programming/assessments/:assessmentId/problems">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><MasterAdminAssessmentForm /></AppShell>
+        </RequireRole>
+      </Route>
+      <Route path="/master-admin/programming/assessments/:assessmentId/results">
+        <RequireRole roles={["master_admin"]}>
+          <AppShell><MasterAdminAssessmentResults /></AppShell>
+        </RequireRole>
       </Route>
 
-      <Route element={<RoleGuard role="student" />}>
-        <Route element={<PortalSidebar role="student" />}>
-          <Route path="/student/dashboard" element={<StudentDashboard />} />
-          <Route path="/student/assessments" element={<PortalStudentAssessments />} />
-          <Route path="/student/assessments/:id/start" element={<PortalStartAssessment />} />
-          <Route path="/student/results" element={<PortalStudentResults />} />
-          <Route path="/student/results/:attemptId" element={<PortalResultDetails />} />
-          <Route path="/student/profile" element={<ProfilePage />} />
-        </Route>
+      <Route path="/student/dashboard">
+        <RoleGuard roles={["student"]}>
+          <PortalSidebar role="student">
+            <StudentDashboard />
+          </PortalSidebar>
+        </RoleGuard>
+      </Route>
+      <Route path="/student/assessments">
+        <RoleGuard roles={["student"]}>
+          <PortalSidebar role="student">
+            <PortalStudentAssessments />
+          </PortalSidebar>
+        </RoleGuard>
+      </Route>
+      <Route path="/student/assessments/:id/start">
+        <RoleGuard roles={["student"]}>
+          <PortalSidebar role="student">
+            <PortalStartAssessment />
+          </PortalSidebar>
+        </RoleGuard>
+      </Route>
+      <Route path="/student/results">
+        <RoleGuard roles={["student"]}>
+          <PortalSidebar role="student">
+            <PortalStudentResults />
+          </PortalSidebar>
+        </RoleGuard>
+      </Route>
+      <Route path="/student/results/:attemptId">
+        <RoleGuard roles={["student"]}>
+          <PortalSidebar role="student">
+            <PortalResultDetails />
+          </PortalSidebar>
+        </RoleGuard>
+      </Route>
+      <Route path="/student/profile">
+        <RoleGuard roles={["student"]}>
+          <PortalSidebar role="student">
+            <ProfilePage />
+          </PortalSidebar>
+        </RoleGuard>
       </Route>
 
-      <Route element={<RequireRole roles={["admin"]} />}>
-        <Route path="/admin/programming" element={<AppShell><AdminProgrammingProblems /></AppShell>} />
-        <Route path="/admin/programming/create" element={<AppShell><AdminProgrammingProblemForm /></AppShell>} />
-        <Route path="/admin/programming/:id/edit" element={<AppShell><AdminProgrammingProblemForm /></AppShell>} />
+      <Route>
+        <Navigate to="/" replace />
       </Route>
-
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    </Switch>
   );
 }

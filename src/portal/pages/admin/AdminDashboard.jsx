@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../../navigation';
 import { ArrowRight, BarChart3, FilePlus2 } from 'lucide-react';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
 import StatCard from '../../components/StatCard';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '@/src/navigation';
 import { Eye, Edit, Trash2, Plus, ClipboardCheck } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import LoadingSkeleton from '@/src/portal/components/LoadingSkeleton';

@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../../navigation';
 import { ArrowRight, BarChart3, BookOpenCheck, Code2, MessageSquareText, Mic2 } from 'lucide-react';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
 import StatCard from '../../components/StatCard';
 import { apiFetch, formatDateTime } from '../../utils/api';
-import { useAuth } from '../../context/AuthContext';
+import useAuthStore from '../../../stores/useAuthStore';
 import { getTimeBasedGreeting } from '@/src/utils/timeGreeting';
 
 function formatRelativeTime(value) {
@@ -30,7 +30,7 @@ function formatDuration(seconds) {
 }
 
 export default function StudentDashboard() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const userModules = user?.modules_access || ["both"];
   const hasAptitude = userModules.includes("aptitude") || userModules.includes("both");
   const hasInterview = userModules.includes("ai_interview") || userModules.includes("both");

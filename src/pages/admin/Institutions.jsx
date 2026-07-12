@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@/src/navigation";
 import {
   Building2, Check, Edit3, ExternalLink, Eye, Loader2, Plus, Save, Search, Trash2, X,
 } from "lucide-react";

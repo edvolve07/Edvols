@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from '@/src/navigation';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { DEFAULT_LANGUAGE_IDS, PROGRAMMING_LANGUAGES as LANGUAGES, emptyStarterCode } from '@/src/portal/utils/programmingLanguages';

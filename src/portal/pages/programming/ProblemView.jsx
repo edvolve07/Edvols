@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link } from '../../../navigation';
 import { ArrowLeft, Play, Loader2, CheckCircle2, XCircle, Clock, AlertTriangle, BookOpen, Terminal, Beaker, ListChecks, ChevronDown, ChevronRight, FileText, History, GraduationCap, MessageSquare, Send, Lock, Lightbulb, Tag, Building2 } from 'lucide-react';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
 import { apiFetch } from '../../utils/api';

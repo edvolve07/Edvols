@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '../../navigation';
 import { ArrowRight, CheckCircle2, Eye, EyeOff, GraduationCap, LogIn } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
+import useAuthStore from '../../stores/useAuthStore';
+import useToastStore from '../../stores/useToastStore';
 import { apiFetch } from '../utils/api';
 
 function homeForRole(role) {
@@ -13,8 +13,8 @@ function homeForRole(role) {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { loginWithToken } = useAuth();
-  const toast = useToast();
+  const { loginWithToken } = useAuthStore();
+  const toast = useToastStore();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -47,30 +47,32 @@ export default function Login() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center px-4 py-8 bg-canvas">
-      <section className="grid w-full max-w-5xl overflow-hidden rounded-2xl bg-brand-950 lg:grid-cols-[1fr_1.1fr]">
-        <div className="relative hidden flex-col justify-between p-10 text-white lg:flex">
-          <div className="flex items-center gap-3">
-            <img src="/edvols%20logo.png" alt="Edvols" className="h-10 w-auto" />
+    <main className="grid min-h-screen place-items-center px-4 py-8" style={{ backgroundColor: "var(--canvas-bg)" }}>
+      <section className="grid w-full max-w-5xl overflow-hidden rounded-2xl shadow-card-elevated lg:grid-cols-[1fr_1.1fr]">
+        <div className="relative hidden flex-col justify-between p-10 text-white lg:flex bg-gradient-to-br from-brand-800 via-brand-900 to-brand-950">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(5,150,105,0.2),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(6,78,59,0.4),transparent_50%)]" />
+          <div className="relative z-10 flex items-center gap-3">
+            <img src="/edvols%20logo.png" alt="Edvols" className="h-10 w-auto brightness-0 invert" />
             <div>
-              <p className="text-2xl font-bold tracking-tight">Edvols</p>
-              <p className="text-sm font-medium text-brand-300">Placement readiness workspace</p>
+              <p className="text-2xl font-bold tracking-tight text-white">Edvols</p>
+              <p className="text-sm font-medium text-emerald-200/80">Placement readiness workspace</p>
             </div>
           </div>
           <div className="relative z-10">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-300">Your placement command center</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300/80">Your placement command center</p>
             <h1 className="mt-4 text-4xl font-bold leading-[1.15] tracking-tight text-white">
               Train smarter.<br />Test faster.<br />Walk in prepared.
             </h1>
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-brand-200">
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-emerald-200/70">
               Edvols combines AI mock interviews, aptitude practice, coding challenges, and performance analytics into one focused workspace.
             </p>
           </div>
           <div className="relative z-10 space-y-3">
             {platformHighlights.map((item) => (
-              <div key={item} className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 transition hover:bg-white/10">
+              <div key={item} className="flex items-center gap-3 rounded-xl bg-white/[0.06] px-4 py-3 backdrop-blur transition hover:bg-white/[0.1]">
                 <CheckCircle2 className="h-5 w-5 shrink-0 text-accent-400" />
-                <span className="text-sm font-medium text-slate-200">{item}</span>
+                <span className="text-sm font-medium text-white/80">{item}</span>
               </div>
             ))}
           </div>
@@ -79,7 +81,7 @@ export default function Login() {
         <form onSubmit={submit} className="bg-white p-8 sm:p-12">
           <div className="lg:hidden">
             <div className="flex items-center gap-3">
-              <img src="/edvols%20logo.png" alt="Edvols" className="h-10 w-auto" />
+              <img src="/edvols%20logo.png" alt="Edvols" className="h-9 w-auto" />
               <p className="text-xl font-bold text-slate-900">Edvols</p>
             </div>
           </div>
@@ -87,7 +89,7 @@ export default function Login() {
           <div className="mt-10 lg:mt-0">
             <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">Welcome back</p>
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Sign in to Edvols</h2>
-            <p className="mt-3 text-sm leading-relaxed text-slate-500">
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-slate-500">
               Resume your interviews, check aptitude results, and track your progress.
             </p>
           </div>
@@ -106,7 +108,7 @@ export default function Login() {
                 required
                 value={form.email}
                 onChange={(event) => setForm({ ...form, email: event.target.value })}
-                className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 transition placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                className="field mt-1.5"
                 placeholder="you@example.com"
               />
             </label>
@@ -118,10 +120,14 @@ export default function Login() {
                   required
                   value={form.password}
                   onChange={(event) => setForm({ ...form, password: event.target.value })}
-                  className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm text-slate-800 transition placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  className="field pr-12"
                   placeholder="Enter your password"
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
+                >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
@@ -134,7 +140,7 @@ export default function Login() {
             </Link>
           </div>
 
-          <button disabled={loading} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 px-5 py-3.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
+          <button disabled={loading} className="btn-primary mt-6 w-full justify-center shadow-md">
             <LogIn className="h-4 w-4" />
             {loading ? 'Signing in...' : 'Sign in'}
           </button>

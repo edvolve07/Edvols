@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from '../../../navigation';
 import { AlertTriangle, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import Timer from '../../components/Timer';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
-import { useToast } from '../../context/ToastContext';
+import useToastStore from '../../../stores/useToastStore';
 import { apiFetch } from '../../utils/api';
 
 function getResumeKey(attemptId) {
@@ -30,7 +30,7 @@ function findResumeIndex(questions, selectedAnswers, storedIndex) {
 export default function StartAssessment() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const toast = useToast();
+  const toast = useToastStore();
   const startRequestSent = useRef(false);
   const [data, setData] = useState(null);
   const [started, setStarted] = useState(false);

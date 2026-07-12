@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from '../../../navigation';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
-import { useToast } from '../../context/ToastContext';
+import useToastStore from '../../../stores/useToastStore';
 import { apiFetch, formatDateTime } from '../../utils/api';
 
 export default function AssessmentResults() {
   const { id } = useParams();
-  const toast = useToast();
+  const toast = useToastStore();
   const [results, setResults] = useState(null);
   const [extensions, setExtensions] = useState({});
   const [savingAttemptId, setSavingAttemptId] = useState(null);

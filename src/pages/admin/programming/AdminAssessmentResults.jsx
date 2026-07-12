@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link } from '@/src/navigation';
 import { ArrowLeft, CheckCircle2, Clock } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import LoadingSkeleton from '@/src/portal/components/LoadingSkeleton';

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "@/src/navigation";
 import {
   ArrowLeft, BookOpenCheck, BrainCircuit, Building2, Loader2,
   Mail, Phone, Plus, ShieldCheck, Trash2, TrendingUp, Upload, UserCog, Users, X, KeyRound, GraduationCap, Building,

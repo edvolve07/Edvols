@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@/src/navigation';
 import {
   Loader2, CheckCircle2, Mic, MicOff,
   Sparkles, BookOpenCheck, Volume2, PhoneOff, Camera,

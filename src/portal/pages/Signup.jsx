@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '../../navigation';
 import { ArrowRight, BarChart3, BookOpenCheck, Eye, EyeOff, GraduationCap, Mic2, ShieldCheck, UserPlus } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
+import useAuthStore from '../../stores/useAuthStore';
+import useToastStore from '../../stores/useToastStore';
 import { apiFetch } from '../utils/api';
 
 function homeForRole(role) {
@@ -13,8 +13,8 @@ function homeForRole(role) {
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { loginWithToken } = useAuth();
-  const toast = useToast();
+  const { loginWithToken } = useAuthStore();
+  const toast = useToastStore();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);

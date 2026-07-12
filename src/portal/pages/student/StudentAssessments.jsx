@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../../navigation';
 import { Play } from 'lucide-react';
 import AssessmentCard from '../../components/AssessmentCard';
 import LoadingSkeleton from '../../components/LoadingSkeleton';

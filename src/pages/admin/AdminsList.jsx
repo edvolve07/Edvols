@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "@/src/navigation";
 import { ArrowLeft, ChevronDown, Loader2, Search, ShieldCheck } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 

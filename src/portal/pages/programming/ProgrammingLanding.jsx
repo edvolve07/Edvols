@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../../../navigation';
 import { Code2, ClipboardCheck, ArrowRight } from 'lucide-react';
 
 export default function ProgrammingLanding() {

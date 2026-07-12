@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from '../../navigation';
 import { ArrowLeft, Eye, EyeOff, GraduationCap, KeyRound } from 'lucide-react';
-import { useToast } from '../context/ToastContext';
+import useToastStore from '../../stores/useToastStore';
 import { apiFetch } from '../utils/api';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
-  const toast = useToast();
+  const toast = useToastStore();
   const [params] = useSearchParams();
   const token = params.get('token') || '';
   const [loading, setLoading] = useState(false);

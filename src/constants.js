@@ -20,7 +20,6 @@ import {
   UserCog,
 } from "lucide-react";
 
-
 export const APP_NAME = "Edvols";  
 
 

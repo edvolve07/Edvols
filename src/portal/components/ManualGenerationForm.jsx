@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../navigation';
 import { Building2, FileText, Minus, Plus, Sparkles, Users } from 'lucide-react';
-import { useToast } from '../context/ToastContext';
+import useToastStore from '../../stores/useToastStore';
 import { apiFetch } from '../utils/api';
 
 const concepts = [
@@ -32,7 +32,7 @@ const singleConceptCount = concepts.length - 1;
 
 export default function ManualGenerationForm() {
   const navigate = useNavigate();
-  const toast = useToast();
+  const toast = useToastStore();
   const [loading, setLoading] = useState(false);
   const [departments, setDepartments] = useState([]);
   const [targetAudience, setTargetAudience] = useState('all');

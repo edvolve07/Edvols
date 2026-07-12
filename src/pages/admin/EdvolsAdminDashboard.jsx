@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/src/navigation";
 import { apiFetch, downloadAdminExport, downloadCodingProgressExport } from "@/lib/api";
-import { useAuth } from "@/src/portal/context/AuthContext";
+import useAuthStore from "@/src/stores/useAuthStore";
 
 function formatRelativeTime(value) {
   if (!value) return "Just now";
@@ -254,7 +254,7 @@ function StudentDetailPanel({ studentId, onClose }) {
 }
 
 export default function EdvolsAdminDashboard() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const userModules = user?.modules_access || ["both"];
   const hasAptitude = userModules.includes("aptitude") || userModules.includes("both");
   const hasInterview = userModules.includes("ai_interview") || userModules.includes("both");

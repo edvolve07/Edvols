@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from '../../../navigation';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
 import ResultSummary from '../../components/ResultSummary';
 import { apiFetch } from '../../utils/api';
