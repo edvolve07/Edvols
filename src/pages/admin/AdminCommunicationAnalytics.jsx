@@ -30,9 +30,9 @@ export default function AdminCommunicationAnalytics() {
       <div className="page-hero">
         <div>
           <p className="eyebrow">Lecturer workspace</p>
-          <h2 className="mt-2 text-3xl font-black text-slate-900">Interview Communication Analytics</h2>
+          <h2 className="mt-2 text-3xl font-black text-slate-900">Communication Practice Analytics</h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            View your students&apos; interview communication practice reports and performance.
+            View your students&apos; communication practice reports and performance.
           </p>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function AdminCommunicationAnalytics() {
           <p className="font-display text-2xl font-semibold text-slate-950 sm:text-3xl">
             {data.total_reports}
           </p>
-          <p className="mt-1 text-sm text-slate-500">Total Interview Sessions</p>
+          <p className="mt-1 text-sm text-slate-500">Total Practice Sessions</p>
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card sm:p-5">
@@ -65,7 +65,7 @@ export default function AdminCommunicationAnalytics() {
             <BarChart3 className="h-5 w-5 text-emerald-500" />
             <div>
               <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-800">
-                Student Interview Sessions
+                Student Practice Sessions
               </h2>
               <p className="mt-1 text-sm text-slate-500">
                 {data.total_reports} session{data.total_reports !== 1 ? 's' : ''} completed.

@@ -21,13 +21,19 @@ const EMOTION_EMOJIS = {
   surprised: '😮', disgusted: '🤢', neutral: '😐',
 };
 
+const GENERAL_CATEGORIES = COMMUNICATION_CATEGORIES.filter(c => c.group === 'general');
+const INTERVIEW_CATEGORIES = COMMUNICATION_CATEGORIES.filter(c => c.group === 'interview');
+
 function SetupScreen({ onStart }) {
-  const [category, setCategory] = useState(COMMUNICATION_CATEGORIES[0]);
+  const [activeTab, setActiveTab] = useState('general');
+  const [category, setCategory] = useState(GENERAL_CATEGORIES[0]);
   const [starting, setStarting] = useState(false);
+
+  const displayedCategories = activeTab === 'general' ? GENERAL_CATEGORIES : INTERVIEW_CATEGORIES;
 
   async function handleStart() {
     setStarting(true);
-    await onStart(category);
+    await onStart(category.label);
     setStarting(false);
   }
 
@@ -44,28 +50,47 @@ function SetupScreen({ onStart }) {
       </svg>
 
       <h1 className="text-center text-2xl font-bold text-slate-800">
-        Live Interview Practice
+        Communication Practice
       </h1>
       <p className="mt-2 max-w-sm text-center text-sm leading-5 text-slate-500">
-        AI-powered interview coach that listens, evaluates, and gives real-time feedback
-        on your communication skills.
+        Practice real-world communication scenarios with an AI coach that listens, evaluates,
+        and gives real-time feedback on your communication skills.
       </p>
 
-      <div className="mt-8 w-full max-w-sm space-y-2">
+      <div className="mt-6 flex gap-2 rounded-full bg-slate-100 p-1">
+        <button
+          onClick={() => { setActiveTab('general'); setCategory(GENERAL_CATEGORIES[0]); }}
+          className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+            activeTab === 'general' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          General Communication
+        </button>
+        <button
+          onClick={() => { setActiveTab('interview'); setCategory(INTERVIEW_CATEGORIES[0]); }}
+          className={`rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+            activeTab === 'interview' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          Interview Prep
+        </button>
+      </div>
+
+      <div className="mt-6 w-full max-w-sm space-y-2">
         <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
-          Choose topic
+          {activeTab === 'general' ? 'Choose a scenario' : 'Choose a topic'}
         </p>
-        {COMMUNICATION_CATEGORIES.map((cat) => (
+        {displayedCategories.map((cat) => (
           <button
-            key={cat}
+            key={cat.id}
             onClick={() => setCategory(cat)}
             className={`w-full rounded-full px-5 py-2.5 text-center text-sm font-semibold transition ${
-              category === cat
+              category.id === cat.id
                 ? 'bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            {cat}
+            {cat.label}
           </button>
         ))}
       </div>
@@ -80,7 +105,7 @@ function SetupScreen({ onStart }) {
         ) : (
           <Sparkles className="h-4 w-4" />
         )}
-        {starting ? 'Connecting...' : 'Start Interview'}
+        {starting ? 'Connecting...' : 'Start Practice'}
       </button>
 
       <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">
@@ -428,7 +453,6 @@ function RoomUI({ category, onComplete }) {
             /* User camera full-size */
             <div className="relative h-full w-full">
               <UserVideoTile onEmotion={handleEmotion} />
-              <EmotionOverlay expressions={expressions} />
             </div>
           )}
         </div>
@@ -443,7 +467,6 @@ function RoomUI({ category, onComplete }) {
             /* User camera PiP */
             <>
               <UserVideoTile onEmotion={handleEmotion} />
-              <EmotionOverlay expressions={expressions} />
               <div className="absolute left-2 top-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold text-white/70 backdrop-blur-sm">
                 You
               </div>

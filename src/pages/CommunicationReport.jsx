@@ -63,7 +63,7 @@ export default function CommunicationReport() {
         className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Interview Practice
+        Back to Communication Practice
       </Link>
 
       {/* Grade card */}
@@ -93,7 +93,7 @@ export default function CommunicationReport() {
       {/* Metric scores */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-slate-400">
-          Interview Communication Scores
+          Communication Scores
         </h3>
         <div className="space-y-3">
           {Object.entries(COMMUNICATION_METRICS).map(([key, { label, color }]) => (
@@ -175,7 +175,7 @@ export default function CommunicationReport() {
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
           <div className="mb-3 flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-            <h3 className="text-sm font-bold uppercase tracking-wide text-emerald-800">Interview Strengths</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-emerald-800">Communication Strengths</h3>
           </div>
           <ul className="space-y-2">
             {(strengths || []).map((item, i) => (
@@ -209,12 +209,12 @@ export default function CommunicationReport() {
         </div>
       </div>
 
-      {/* Interview Tips */}
+      {/* Tips */}
       {tips && tips.length > 0 && (
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <Lightbulb className="h-5 w-5 text-amber-500" />
-            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400">Interview Tips</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400">Communication Tips</h3>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {tips.map((tip, i) => (
@@ -231,10 +231,10 @@ export default function CommunicationReport() {
         <div className="rounded-xl border border-sky-200 bg-sky-50 p-5">
           <div className="mb-3 flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-sky-600" />
-            <h3 className="text-sm font-bold uppercase tracking-wide text-sky-800">Real-World Interview Preparation</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-sky-800">Real-World Application</h3>
           </div>
           <p className="mb-3 text-xs text-sky-600">
-            Specific tips to help you succeed in actual job interviews:
+            Specific tips to help you in real-world situations:
           </p>
           <ul className="space-y-2">
             {real_world_preparation.map((tip, i) => (
@@ -258,7 +258,7 @@ export default function CommunicationReport() {
               </h3>
             </div>
             <p className="mt-1 text-xs text-slate-400">
-              Review the complete interview with per-exchange scoring and real-world tips
+              Review the complete session with per-exchange scoring and real-world tips
             </p>
           </div>
           <div className="divide-y divide-slate-100">
@@ -291,7 +291,7 @@ export default function CommunicationReport() {
                 {expandedExchange === i && (
                   <div className="border-t border-slate-100 px-5 py-4">
                     <div className="mb-3">
-                      <p className="mb-1 text-xs font-semibold text-slate-400">Interviewer:</p>
+                      <p className="mb-1 text-xs font-semibold text-slate-400">Prompt:</p>
                       <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{ex.interviewer}</p>
                     </div>
                     <div className="mb-3">

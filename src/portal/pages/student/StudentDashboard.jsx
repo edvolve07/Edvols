@@ -177,13 +177,13 @@ export default function StudentDashboard() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <MessageSquareText className="h-5 w-5 text-emerald-800" />
-              <h3 className="text-lg font-black text-slate-900">Interview Communication</h3>
+              <h3 className="text-lg font-black text-slate-900">Communication Practice</h3>
             </div>
             <Link
               to="/communication"
               className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
             >
-              Practice Answers <ArrowRight className="h-4 w-4" />
+              Start Practice <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">

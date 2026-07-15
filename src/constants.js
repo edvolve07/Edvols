@@ -34,13 +34,13 @@ export const NAV_ITEMS = [
   { href: "/programming/practice", label: "Coding Practice", icon: Code2, roles: ["student"], modules: ["both", "programming"] },
   // { href: "/programming", label: "AI Mock Interview", icon: Cpu, roles: ["student"], modules: ["both", "programming"] },
   { href: "/programming/assessments", label: "Contests", icon: ClipboardCheck, roles: ["student"], modules: ["both", "programming"] },
-  { href: "/communication", label: "Interview Communication", icon: MessageSquareText, roles: ["student"], modules: ["both", "communication"] },
+  { href: "/communication", label: "Communication Practice", icon: MessageSquareText, roles: ["student"], modules: ["both", "communication"] },
   { href: "/reports", label: "Reports", icon: FileText, roles: ["student"], modules: ["both", "aptitude", "ai_interview"] },
   { href: "/resume-builder", label: "Resume Builder", icon: FilePlus2, roles: ["student"] },
   { href: "/admin/dashboard", label: "Admin Dashboard", icon: ShieldCheck, roles: ["admin"] },
   { href: "/admin/analytics/aptitude", label: "Aptitude Analytics", icon: BrainCircuit, roles: ["admin"], modules: ["both", "aptitude"] },
   { href: "/admin/analytics/interviews", label: "Interview Analytics", icon: Mic2, roles: ["admin"], modules: ["both", "ai_interview"] },
-  { href: "/admin/analytics/communication", label: "Interview Comm Analytics", icon: MessageSquareText, roles: ["admin"], modules: ["both", "communication"] },
+  { href: "/admin/analytics/communication", label: "Comm Practice Analytics", icon: MessageSquareText, roles: ["admin"], modules: ["both", "communication"] },
   { href: "/master-admin/dashboard", label: "Master Admin", icon: Crown, roles: ["master_admin"] },
   { href: "/master-admin/institutions", label: "Institutions", icon: Building2, roles: ["master_admin"] },
   { href: "/master-admin/master-admins", label: "Master Admins", icon: Crown, roles: ["master_admin"] },
@@ -153,14 +153,27 @@ export const METRIC_COLORS = {
 };
 
 export const COMMUNICATION_CATEGORIES = [
-  'Tell Me About Yourself',
-  'Behavioral Questions (STAR)',
-  'Strengths & Weaknesses',
-  'Why This Role / Company',
-  'Technical Explanations',
-  'Handling Difficult Questions',
-  'Career Goals & Aspirations',
-  'Salary & Negotiation Talk',
+  { id: 'everyday-conversation', label: 'Everyday Conversation & Small Talk', group: 'general' },
+  { id: 'active-listening', label: 'Active Listening & Empathy', group: 'general' },
+  { id: 'assertive-communication', label: 'Assertive Communication', group: 'general' },
+  { id: 'conflict-resolution', label: 'Conflict Resolution & Difficult Conversations', group: 'general' },
+  { id: 'persuasion', label: 'Persuasion & Influence', group: 'general' },
+  { id: 'public-speaking', label: 'Public Speaking & Presentations', group: 'general' },
+  { id: 'networking', label: 'Networking & Professional Introductions', group: 'general' },
+  { id: 'feedback', label: 'Giving & Receiving Feedback', group: 'general' },
+  { id: 'cross-cultural', label: 'Cross-Cultural Communication', group: 'general' },
+  { id: 'storytelling', label: 'Storytelling & Narrative Skills', group: 'general' },
+  { id: 'team-collab', label: 'Team Collaboration & Meetings', group: 'general' },
+  { id: 'client-comm', label: 'Client & Stakeholder Communication', group: 'general' },
+  { id: 'crisis-comm', label: 'Crisis Communication', group: 'general' },
+  { id: 'tell-me-about-yourself', label: 'Tell Me About Yourself', group: 'interview' },
+  { id: 'behavioral-star', label: 'Behavioral Questions (STAR)', group: 'interview' },
+  { id: 'strengths-weaknesses', label: 'Strengths & Weaknesses', group: 'interview' },
+  { id: 'why-role-company', label: 'Why This Role / Company', group: 'interview' },
+  { id: 'technical-explanations', label: 'Technical Explanations', group: 'interview' },
+  { id: 'difficult-questions', label: 'Handling Difficult Questions', group: 'interview' },
+  { id: 'career-goals', label: 'Career Goals & Aspirations', group: 'interview' },
+  { id: 'salary-negotiation', label: 'Salary & Negotiation Talk', group: 'interview' },
 ];
 
 export const COMMUNICATION_METRICS = {
@@ -173,13 +186,13 @@ export const COMMUNICATION_METRICS = {
 
 export const COMMUNICATION_WORKFLOW = [
   {
-    title: 'Pick an interview topic',
-    description: 'Choose a question type you want to practice answering.',
+    title: 'Pick a communication scenario',
+    description: 'Choose a real-world situation you want to practice.',
     icon: MessageSquareText,
   },
   {
-    title: 'Practice your answer',
-    description: 'Respond to realistic interview prompts with text answers.',
+    title: 'Practice your response',
+    description: 'Respond naturally to realistic conversation prompts.',
     icon: Sparkles,
   },
   {
@@ -189,7 +202,7 @@ export const COMMUNICATION_WORKFLOW = [
   },
   {
     title: 'Improve faster',
-    description: 'Use feedback and tips to ace your real interview.',
+    description: 'Use feedback and tips to communicate more effectively in any situation.',
     icon: TrendingUp,
   },
 ];
