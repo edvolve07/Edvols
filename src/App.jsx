@@ -156,6 +156,8 @@ function AppShell({ children }) {
             </button>
           ) : null}
 
+
+
           <button
             type="button"
             onClick={() => navigate("/profile")}
