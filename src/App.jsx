@@ -158,7 +158,7 @@ function AppShell({ children }) {
 
 
 
-          <button
+          <button  
             type="button"
             onClick={() => navigate("/profile")}
             className="inline-flex shrink-0 items-center gap-2 rounded-lg px-1 py-1 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95 sm:px-2"
